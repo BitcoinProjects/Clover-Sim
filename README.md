@@ -1,0 +1,2 @@
+# btcnetsim
+Bitcoin Network Simulator

@@ -21,7 +21,7 @@ btcd = "bitcoind"
 btcli = "bitcoin-cli"
 btcdx = btcdir+btcd
 btclix = btcdir+btcli
-btcopt = "-regtest -fallbackfee=0.00001 -debug=all"
+btcopt = "-regtest -fallbackfee=0.00000001 -dustrelayfee=0.0 -debug=all"
 
 def execN(node, cmd, opts=""):
     os.system("docker exec -t "+node+" "+btclix+" -regtest "+opts+" "+cmd)
@@ -145,5 +145,3 @@ def deleteNetwork():
 
     os.system("docker stop $(docker ps -a --filter=\"name=node\" -q) > /dev/null")
     os.system("docker rm $(docker ps -a --filter=\"name=node\" -q) > /dev/null")
-
-    return

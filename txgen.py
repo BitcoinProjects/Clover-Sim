@@ -9,7 +9,7 @@ import btcnet
 #Global
 wallet="netsim3"
 miner=""
-do_run=True
+#txdb=
 
 def execW(node, cmd):
     btcnet.execN(node, cmd, "-rpcwallet="+wallet)
@@ -50,7 +50,10 @@ def sendTx(nFrom, nTo, amount):
         return
 
     addr = getBTCAddress(nTo)
-    execW(nFrom, "sendtoaddress "+addr+" "+str(amount))
+    txhash=execWR(nFrom, "sendtoaddress "+addr+" "+str(amount))
+
+    print "HASH:"+txhash
+    txdb.write(txhash+":"+nFrom+":"+nTo+"\n")
 
 # Generate 'num' blocks to 'nodeGiver'
 def genBlocks(num):
@@ -115,9 +118,11 @@ def printBalances():
 def initTxSim():
     addMiner()
 
-    nodeList = btcnet.getNodeList()
+    global txdb
+    txdb = open("db/txs.db", "w")
 
     # Create wallets #
+    nodeList = btcnet.getNodeList()
     for node in nodeList:
         genBTCAddress(node)
         execWS(node, "settxfee 0.0")
@@ -144,9 +149,11 @@ def initTxSim():
     thrBlocks.start()
 
     #TODO Get simulation time as argument
-    time.sleep(30)
+    time.sleep(60)
     t_stop.set()
 
-    printBalances()
+    # printBalances()
+    time.sleep(2)
+    txdb.close()
 
     #TODO: save 'txrun' state. so that when new nodes are created, if txrun, send them coins

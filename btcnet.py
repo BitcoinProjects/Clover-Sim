@@ -120,9 +120,6 @@ def createNetwork(numReach, numUnreach):
 
 # Dump logs
 def dumpLogs():
-    if not os.path.exists('log'):
-        os.makedirs('log')
-
     print "Dumping logs"
 
     nodeList = getNodeList()
@@ -143,5 +140,6 @@ def stopNodes():
 def deleteNetwork():
     dumpLogs()
 
+    print "Stopping nodes"
     os.system("docker stop $(docker ps -a --filter=\"name=node\" -q) > /dev/null")
     os.system("docker rm $(docker ps -a --filter=\"name=node\" -q) > /dev/null")

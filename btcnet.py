@@ -78,7 +78,6 @@ def runNode(name, options):
 def connectNode(nFrom,nTo):
     toAddr = getNodeIP(nTo)
     print "connecting "+nFrom+" to "+nTo
-    # os.system('docker exec -t '+nFrom+' '+btclix+' -regtest addnode '+ toAddr +':18444 add')
     execN(nFrom,"addnode "+toAddr+":18444 add")
 
 #Connect a node to 3 R nodes
@@ -88,9 +87,6 @@ def connectNodes(node):
 
     print node+":"
     for rNode in randList:
-        # nodeIP = getNodeIP(rNode)
-        # print "add "+rNode+"("+nodeIP+")"
-        # os.system('docker exec -t '+node+' '+btclix+' -regtest addnode '+ nodeIP +':18444 add')
         connectNode(node,rNode)
 
 #Run a new node and connect it
@@ -141,13 +137,11 @@ def stopNodes():
     nodeList = getNodeList()
 
     for node in nodeList:
-        os.system('docker exec -t '+node+' '+btclix+' -regtest stop > /dev/null')
+        execS(node,"stop")
 
 # Stop and delete all 'node' containers
 def deleteNetwork():
     dumpLogs()
-
-    
 
     os.system("docker stop $(docker ps -a --filter=\"name=node\" -q) > /dev/null")
     os.system("docker rm $(docker ps -a --filter=\"name=node\" -q) > /dev/null")

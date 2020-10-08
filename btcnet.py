@@ -9,20 +9,36 @@ import os
 import time
 import math
 import random
+import json
+
+import txgen
 
 #Global
+IMG = "netsim"
 btcdir = "/btc/"
+bindir = "bin/"
 btcd = "bitcoind"
 btcli = "bitcoin-cli"
 btcdx = btcdir+btcd
 btclix = btcdir+btcli
+btcopt = "-regtest -fallbackfee=0.00001 -debug=all"
+
+def execN(node, cmd, opts=""):
+    os.system("docker exec -t "+node+" "+btclix+" -regtest "+opts+" "+cmd)
+
+def execS(node, cmd, opts=""):
+    execN(node, cmd+">/dev/null", opts)
+
+def execNR(node, cmd, opts=""):
+    return os.popen("docker exec -t "+node+" "+btclix+" -regtest "+opts+" "+cmd).read().strip()
 
 def getNodeIP(node):
     ip = os.popen("docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "+node).read().rstrip()
 
     return ip
 
-def getNodeList(name):
+def getNodeList(name="node"):
+    
     nodeList = os.popen("docker ps --filter=\"name="+name+"\" --format '{{.Names}}'").readlines()
     for i in range(len(nodeList)):
         nodeList[i] = nodeList[i].rstrip()
@@ -41,56 +57,99 @@ def getRandList(name, num, exclude):
 
     return randList
 
+def getRandNode(exclude):
+    rList = getRandList("node",1,exclude)
+    return rList[0]
 
-#Create a docker image with the binaries contained in 'bindir' and save it as 'name'
-def createNodeDock(bindir, name):
-    os.system("docker run -it -d --name "+name+" ubuntu /bin/bash")
-    os.system("docker cp "+bindir+" "+name+":/btc")
-    os.system("docker commit "+name+" "+name+":latest")
-    os.system("docker stop "+name+"&& docker rm "+name)
+
+#Create a docker image with the binaries contained in 'bin/' and save it as 'netsim'
+def createNodeDock():
+    os.system("docker run -it -d --name "+IMG+" ubuntu /bin/bash")
+    os.system("docker cp "+bindir+" "+IMG+":/btc")
+    os.system("docker commit "+IMG+" "+IMG+":latest")
+    os.system("docker stop "+IMG+" && docker rm "+IMG)
 
 #Start a new node container
-def runNode(img, name, options):
-    print "Running "+name
-    os.system("docker run -it -d --name "+name+" "+img+" "+btcdx+" -regtest "+options)
+def runNode(name, options):
+    os.system("docker run -it -d --name "+name+" "+IMG+" "+btcdx+" "+btcopt+" "+options)
+    print "Running "+name+"("+getNodeIP(name)+")"
 
-#Create 'numNodes' containers and create random connections
-def createNetwork(bindir, name, numReach, numUnreach):
-    createNodeDock(bindir, name)
 
-    # numReach = int(math.ceil(numNodes / 10))+1
-    # numUnreach = numNodes - numReach
+def connectNode(nFrom,nTo):
+    toAddr = getNodeIP(nTo)
+    print "connecting "+nFrom+" to "+nTo
+    # os.system('docker exec -t '+nFrom+' '+btclix+' -regtest addnode '+ toAddr +':18444 add')
+    execN(nFrom,"addnode "+toAddr+":18444 add")
 
-    print "numReach="+str(numReach)+" numUnreach="+str(numUnreach)
+#Connect a node to 3 R nodes
+def connectNodes(node):
+    #get random R nodes
+    randList = getRandList("nodeR",8,node)
+
+    print node+":"
+    for rNode in randList:
+        # nodeIP = getNodeIP(rNode)
+        # print "add "+rNode+"("+nodeIP+")"
+        # os.system('docker exec -t '+node+' '+btclix+' -regtest addnode '+ nodeIP +':18444 add')
+        connectNode(node,rNode)
+
+#Run a new node and connect it
+def addNode(name, options):
+    runNode(name, options)
+    time.sleep(2)
+    connectNodes(name)
+
+#Create 'numReach'+'numUnreach' containers and create random connections
+def createNetwork(numReach, numUnreach):
+    createNodeDock()
+
+    print "num nodes="+str(numReach+numUnreach)
 
     #create reachable nodes
     for i in range(1, numReach+1):
-        runNode(name, "nodeR"+str(i), "-debug=net")
+        runNode("nodeR"+str(i), "")
 
     #create unreachable nodes
     for i in range(1, numUnreach+1):
-        runNode(name, "nodeU"+str(i), "-debug=net -listen=0")
+        runNode("nodeU"+str(i), "-listen=0")
 
     time.sleep(2)
 
     #create connections
-    nodeList = getNodeList("node")
+    nodeList = getNodeList()
     for node in nodeList:
-        #get random R nodes
-        randList = getRandList("nodeR",3,node)
-
-        print node+":"
-        for rNode in randList:
-            nodeIP = getNodeIP(rNode)
-            print "add "+rNode+"("+nodeIP+")"
-            # cmd='docker exec -t '+node+' '+btclix+' -regtest addnode '+ getNodeIP(rNode) +':18444 add'
-            # print cmd
-            os.system('docker exec -t '+node+' '+btclix+' -regtest addnode '+ getNodeIP(rNode) +':18444 add')
+        connectNodes(node)
 
     return    
 
+# Dump logs
+def dumpLogs():
+    if not os.path.exists('log'):
+        os.makedirs('log')
+
+    print "Dumping logs"
+
+    nodeList = getNodeList()
+    for node in nodeList:
+        nLog = os.popen('docker exec -t '+node+' cat /root/.bitcoin/regtest/debug.log').read()
+
+        f = open("log/"+node+".log", "w")
+        f.write(nLog)
+        f.close()
+
+def stopNodes():
+    nodeList = getNodeList()
+
+    for node in nodeList:
+        os.system('docker exec -t '+node+' '+btclix+' -regtest stop > /dev/null')
+
+# Stop and delete all 'node' containers
 def deleteNetwork():
-    os.system("docker stop $(docker ps -a --filter=\"name=node\" -q)")
-    os.system("docker rm $(docker ps -a --filter=\"name=node\" -q)")
+    dumpLogs()
+
+    
+
+    os.system("docker stop $(docker ps -a --filter=\"name=node\" -q) > /dev/null")
+    os.system("docker rm $(docker ps -a --filter=\"name=node\" -q) > /dev/null")
 
     return

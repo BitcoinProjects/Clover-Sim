@@ -1,6 +1,7 @@
 import os
 import time
 import json
+import fileinput
 import threading
 
 import btcnet
@@ -8,8 +9,6 @@ import btcnet
 ### TRANSACTIONS ###
 #Global
 wallet="netsim3"
-miner=""
-#txdb=
 
 def execW(node, cmd):
     btcnet.execN(node, cmd, "-rpcwallet="+wallet)
@@ -52,25 +51,25 @@ def sendTx(nFrom, nTo, amount):
     addr = getBTCAddress(nTo)
     txhash=execWR(nFrom, "sendtoaddress "+addr+" "+str(amount))
 
-    print "HASH:"+txhash
-    txdb.write(txhash+":"+nFrom+":"+nTo+"\n")
+    return txhash
 
 # Generate 'num' blocks to 'nodeGiver'
 def genBlocks(num):
+    miner=getMiner()
     addr = getBTCAddress(miner)
     print "[LOG] Generating "+str(num)+" blocks to "+miner
     execW(miner, "generatetoaddress "+str(num)+" "+addr+">/dev/null")
 
 # Send funds to a node
 def fundNode(node,amount):
+    miner=getMiner()
+
     if node == miner:
         return
 
     print("Funding "+node)
     balance = getBalance(miner)
-    print "Giver balance: "+ str(balance)
     
-    #If there are no funds, create a new block
     if balance > amount :
         sendTx(miner, node, amount)
     else:    
@@ -78,39 +77,38 @@ def fundNode(node,amount):
     
 # Generate miner node
 def addMiner():
-    global miner
-
-    node=btcnet.getRandNode("")
-    print("randNode:"+node)
+    node=btcnet.getRandNode("node")
     miner=node+"Miner"
     os.system("docker rename "+node+" "+miner)
 
+    #Update node DB file
+    for line in fileinput.input("db/nodes.db", inplace = 1): 
+      print line.replace(node+"=", miner+"="), # +"=" avoids ambiguity between R1 and R10
+
+def getMiner():
+    return btcnet.getRandNode("Miner")
 
 # 
 def generateTransactions(arg,stop_event):
     while not stop_event.is_set():
         nodes = btcnet.getRandList("node",2,"")
-        sendTx(nodes[0], nodes[1], 0.00000001) #Send 1 satoshi
+        txhash = sendTx(nodes[0], nodes[1], 0.00000001) #Send 1 satoshi
+        txdb.write(txhash+" "+nodes[0]+" "+nodes[1]+"\n")
         time.sleep(1) #Generate a transactions every second()
 
 def generateBlocks(arg,stop_event):
     while not stop_event.is_set():
         print "Generating blocks"
         genBlocks(100)
-
-        # Send some funds to nodes #
-        nodeList = btcnet.getNodeList()
-        for node in nodeList:
-            #send funds
-            fundNode(node,1)
-
         time.sleep(10) #Generate 100 blocks every 10 seconds
+
+        #TODO: check if any node need funds
+        # fundNode(node,amount)
 
 def printBalances():
     nodeList = btcnet.getNodeList()
     for node in nodeList:
         balance = getBalance(node)
-        # execW(node, "listtransactions")
         print "balance("+node+")="+str(balance)+" unconfirmed="+str(getUnconfirmedBalance(node))
 
 # Generate coins and transactions
@@ -141,6 +139,10 @@ def initTxSim():
     genBlocks(100)
     time.sleep(30)
 
+def runTxSim(duration):
+    global txdb
+    txdb = open("db/txs.db", "a")
+
     #randomly generate transactions
     t_stop = threading.Event()
     thrTransactions = threading.Thread(target=generateTransactions, args=(1,t_stop))
@@ -149,11 +151,7 @@ def initTxSim():
     thrBlocks.start()
 
     #TODO Get simulation time as argument
-    time.sleep(60)
+    time.sleep(duration)
     t_stop.set()
-
-    # printBalances()
-    time.sleep(2)
-    txdb.close()
 
     #TODO: save 'txrun' state. so that when new nodes are created, if txrun, send them coins

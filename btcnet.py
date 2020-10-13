@@ -21,7 +21,7 @@ btcd = "bitcoind"
 btcli = "bitcoin-cli"
 btcdx = btcdir+btcd
 btclix = btcdir+btcli
-btcopt = "-regtest -fallbackfee=0.00000001 -dustrelayfee=0.0 -debug=all"
+btcopt = "-regtest -fallbackfee=0.00000001 -dustrelayfee=0.0"
 
 def execN(node, cmd, opts=""):
     os.system("docker exec -t "+node+" "+btclix+" -regtest "+opts+" "+cmd)
@@ -57,8 +57,8 @@ def getRandList(name, num, exclude):
 
     return randList
 
-def getRandNode(exclude):
-    rList = getRandList("node",1,exclude)
+def getRandNode(name, exclude=""):
+    rList = getRandList(name,1,exclude)
     return rList[0]
 
 
@@ -74,11 +74,14 @@ def runNode(name, options):
     os.system("docker run -it -d --name "+name+" "+IMG+" "+btcdx+" "+btcopt+" "+options)
     print "Running "+name+"("+getNodeIP(name)+")"
 
+    nodeDb = open("db/nodes.db","a")
+    nodeDb.write(name+"="+getNodeIP(name)+"\n")
+
 
 def connectNode(nFrom,nTo):
     toAddr = getNodeIP(nTo)
     print "connecting "+nFrom+" to "+nTo
-    execN(nFrom,"addnode "+toAddr+":18444 add")
+    execN(nFrom,"addnode "+toAddr+":18444 onetry")
 
 #Connect a node to 3 R nodes
 def connectNodes(node):

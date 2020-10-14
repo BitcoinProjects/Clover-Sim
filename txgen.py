@@ -126,13 +126,13 @@ def initTxSim():
         execWS(node, "settxfee 0.0")
 
     # Generate initial blocks
-    genBlocks(101)
-    time.sleep(30)
+    genBlocks(110)
+    time.sleep(60)
 
     # Send funds to all nodes #
     for node in nodeList:
         #send funds
-        fundNode(node,1)
+        fundNode(node,2)
         time.sleep(1)
 
     # #Create block to confirm txs

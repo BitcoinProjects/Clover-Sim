@@ -21,7 +21,7 @@ btcd = "bitcoind"
 btcli = "bitcoin-cli"
 btcdx = btcdir+btcd
 btclix = btcdir+btcli
-btcopt = "-regtest -fallbackfee=0.00000001 -dustrelayfee=0.0"
+btcopt = "-regtest -fallbackfee=0.00000001 -dustrelayfee=0.0 -debug=net"
 
 def execN(node, cmd, opts=""):
     os.system("docker exec -t "+node+" "+btclix+" -regtest "+opts+" "+cmd)

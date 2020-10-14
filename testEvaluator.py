@@ -49,7 +49,7 @@ def main():
     falses = 0
     for tx in estSources:
         if tx in txDB:
-            if estSources[tx] == txDB[tx]:
+            if estSources[tx]['src'] == txDB[tx]:
                 print "CORRECT: "+tx
                 trues+=1
             else:

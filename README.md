@@ -2,11 +2,11 @@
 Bitcoin Network Simulator using regtest and docker containers [work in progress]
 
 Currently does:
-    - Create network with N reachable nodes and M unreachable nodes
-    - Connecting each node to 8 outbound peers
-    - Create a miner from existing nodes, initialize blockchain, and fund existing nodes with 1 BTC
-    - Run simulation for X seconds, creating 1 transaction per second and 100 blocks every 10 seconds
-        - Transactions transfer 1 satoshi between 2 random nodes of the network
+    - Create network with N reachable nodes and M unreachable nodes  
+    - Connect each node to 8 outbound peers  
+    - Create a miner from existing nodes, initialize blockchain, and fund existing nodes with 1 BTC  
+    - Run simulation for X seconds, creating 1 transaction per second and 100 blocks every 10 seconds  
+        - Transactions transfer 1 satoshi between 2 random nodes of the network  
 
 ## Requirements
     - Python 2.7

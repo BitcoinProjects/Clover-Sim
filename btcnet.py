@@ -74,6 +74,9 @@ def runNode(name, options):
     os.system("docker run -it -d --name "+name+" "+IMG+" "+btcdx+" "+btcopt+" "+options)
     print "Running "+name+"("+getNodeIP(name)+")"
 
+    if not os.path.exists('db'):
+        os.makedirs('db')
+
     nodeDb = open("db/nodes.db","a")
     nodeDb.write(name+"="+getNodeIP(name)+"\n")
 

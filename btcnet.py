@@ -10,6 +10,7 @@ import time
 import math
 import random
 import json
+import fileinput
 
 import txgen
 
@@ -21,7 +22,7 @@ btcd = "bitcoind"
 btcli = "bitcoin-cli"
 btcdx = btcdir+btcd
 btclix = btcdir+btcli
-btcopt = "-regtest -fallbackfee=0.00000001 -dustrelayfee=0.0"
+btcopt = "-regtest -fallbackfee=0.00000001 -dustrelayfee=0.0 -logips -debug=all -logtimemicros"
 
 def execN(node, cmd, opts=""):
     os.system("docker exec -t "+node+" "+btclix+" -regtest "+opts+" "+cmd)
@@ -80,6 +81,13 @@ def runNode(name, options):
     nodeDb = open("db/nodes.db","a")
     nodeDb.write(name+"="+getNodeIP(name)+"\n")
 
+def renameNode(name, newName):
+    os.system("docker rename "+name+" "+newName)
+
+    #Update node DB file
+    for line in fileinput.input("db/nodes.db", inplace = 1): 
+      print line.replace(name+"=", newName+"="), # +"=" avoids ambiguity between R1 and R10
+
 
 def connectNode(nFrom,nTo):
     toAddr = getNodeIP(nTo)
@@ -136,6 +144,11 @@ def dumpLogs():
         f.write(nLog)
         f.close()
 
+def stopContainers(name):
+    print "Stopping "+name+" containers"
+    os.system("docker stop $(docker ps -a --filter=\"name="+name+"\" -q) > /dev/null")
+    os.system("docker rm $(docker ps -a --filter=\"name="+name+"\" -q) > /dev/null")
+
 def stopNodes():
     nodeList = getNodeList()
 
@@ -145,7 +158,4 @@ def stopNodes():
 # Stop and delete all 'node' containers
 def deleteNetwork():
     dumpLogs()
-
-    print "Stopping nodes"
-    os.system("docker stop $(docker ps -a --filter=\"name=node\" -q) > /dev/null")
-    os.system("docker rm $(docker ps -a --filter=\"name=node\" -q) > /dev/null")
+    stopContainers("node")

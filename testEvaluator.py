@@ -36,26 +36,22 @@ def main():
     txs = readFileLS("db/txs.db")
     txDB = {}
     for i in range(len(txs)):
-        # print txs[i]
         txs[i] = txs[i].split(" ")
-        # if(txs[i][1] in nodeDB):
-        txDB[txs[i][0]] = nodeDB[txs[i][1]]
-
-    # 
-    # for eTx in estSources:
-    #     print eTx+' : '+estSources[eTx]
+        if(txs[i][1] in nodeDB):
+            txDB[txs[i][0]] = nodeDB[txs[i][1]]
+        else:
+            print "WARNING: missing: "+txs[i][0]
 
     trues = 0
     falses = 0
     for tx in estSources:
         if tx in txDB:
             if estSources[tx]['src'] == txDB[tx]:
-                print "CORRECT: "+tx
                 trues+=1
             else:
                 falses+=1
 
-    rate = float(trues) / len(estSources)
-    print "Correct: "+str(trues)+"  (Rate: "+ str(rate)+")"
+    rate = float(trues) / len(txs)
+    print "Correct: "+str(trues)+" over "+str(len(txs))+"  (Rate: "+ str(rate)+")"
 
 main()

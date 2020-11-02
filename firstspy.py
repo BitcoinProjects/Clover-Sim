@@ -55,15 +55,20 @@ def buildSpyDB():
         spyDB[s]['peers']=peerDB
 
         #Build transactions
-        txs = os.popen("cat "+log+" | grep \"got inv: tx\" | grep new").readlines()
+        txs = os.popen("cat "+log+" | grep new | grep \"got inv: tx\|got proxytx\"").readlines()
         txDB = {}
         txHashes = [None]*len(txs)
         txTimes = [None]*len(txs)
         txSources = [None]*len(txs)
         for i in range(len(txs)):
             txData = txs[i].rstrip().split(' ')
-            txTime = txData[0].replace('Z','').replace('T',' ') #txTime = AAAA-MM-DD HH:MM:SS
-            txDB[txData[4]] = {'time':txTime, 'source':txData[7][5:]}
+            if(txData[4] not in txDB.keys()):
+                # print txData
+                txTime = txData[0].replace('Z','').replace('T',' ') #txTime = AAAA-MM-DD HH:MM:SS
+                if(txData[3]=='proxytx:'):
+                    isProxy=True
+                else: isProxy=False
+                txDB[txData[4]] = {'time':txTime, 'source':txData[7][5:], 'proxy':isProxy}
         spyDB[s]['txs']=txDB
 
     # printDB()
@@ -79,9 +84,11 @@ def estimateSources(printOutput):
                 estSources[t] = {}
                 estSources[t]['src'] = spyDB[s]['peers'][spyDB[s]['txs'][t]['source']]
                 estSources[t]['time'] = spyDB[s]['txs'][t]['time']
+                estSources[t]['proxy'] = spyDB[s]['txs'][t]['proxy']
             elif parseDate(spyDB[s]['txs'][t]['time']) < parseDate(estSources[t]['time']):
                     estSources[t]['src'] = spyDB[s]['peers'][spyDB[s]['txs'][t]['source']]
                     estSources[t]['time'] = spyDB[s]['txs'][t]['time']
+                    estSources[t]['proxy'] = spyDB[s]['txs'][t]['proxy']
 
     dumpDB("estSources.db",estSources)
 

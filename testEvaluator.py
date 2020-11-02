@@ -42,16 +42,29 @@ def main():
         else:
             print "WARNING: missing: "+txs[i][0]
 
+    # Compute overall
     trues = 0
-    falses = 0
+    ptxs = 0
     for tx in estSources:
         if tx in txDB:
+            ptxs+=1
             if estSources[tx]['src'] == txDB[tx]:
                 trues+=1
-            else:
-                falses+=1
 
-    rate = float(trues) / len(txs)
-    print "Correct: "+str(trues)+" over "+str(len(txs))+"  (Rate: "+ str(rate)+")"
+    rate = float(trues) / float(ptxs)
+    print "Correct: "+str(trues)+" over "+str(ptxs)
+    print "Precision (overall): "+ str(rate)
+
+    # Compute proxytx only
+    trues = 0
+    ptxs = 0
+    for tx in estSources:
+        if (estSources[tx]['proxy']==True and tx in txDB):
+            ptxs+=1
+            if estSources[tx]['src'] == txDB[tx]:
+                trues+=1
+    
+    rateproxy = float(trues) / float(ptxs)
+    print "Correct: "+str(trues)+" over "+str(ptxs)+"  (Rate: "+ str(rateproxy)+")"
 
 main()

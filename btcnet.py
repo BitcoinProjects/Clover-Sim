@@ -17,8 +17,9 @@ import txgen
 #Global
 IMG = "netsim"
 miner="nodeMiner"
+minerBin="bin/miner"
 btcdir = "/btc/"
-bindir = "bin/"
+bindir = "bin/clover/"
 btcd = "bitcoind"
 btcli = "bitcoin-cli"
 btcdx = btcdir+btcd
@@ -75,7 +76,7 @@ def createNodeDock():
 
 def createNodeMiner():    
     os.system("docker run -it -d --name "+miner+" ubuntu:latest /bin/bash")
-    os.system("docker cp "+"bin020/"+" "+miner+":/btc")
+    os.system("docker cp "+minerBin+" "+miner+":/btc")
     os.system("docker commit "+miner+" "+IMG+":miner")
     os.system("docker stop "+miner+" && docker rm "+miner)
 

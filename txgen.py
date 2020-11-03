@@ -2,6 +2,7 @@ import os
 import time
 import json
 import threading
+# import math
 
 import btcnet
 
@@ -61,6 +62,9 @@ def genBlocks(num):
 # Send funds to a node
 def fundNode(node,amount):
     miner=getMiner()
+    if miner == None:
+        print "ERROR: No miner found"
+        return 
 
     if node == miner:
         return
@@ -71,14 +75,14 @@ def fundNode(node,amount):
     if balance > amount :
         sendTx(miner, node, amount)
     else:    
-        print "Insufficient funds"
+        print "Insufficient funds ("+str(balance)+")"
     
 # Generate miner node
-def addMiner():
-    node=btcnet.getRandNode("nodeR")
-    miner=node+"Miner"
+# def addMiner():
+#     node=btcnet.getRandNode("nodeR")
+#     miner=node+"Miner"
 
-    btcnet.renameNode(node,miner)
+#     btcnet.renameNode(node,miner)
 
 def getMiner():
     return btcnet.getRandNode("Miner")
@@ -87,7 +91,7 @@ def getMiner():
 def generateTransactions(arg,stop_event):
     db = ""
     while not stop_event.is_set():
-        nodes = btcnet.getRandList("node",2,"")
+        nodes = btcnet.getRandList("node",2,"nodeMiner")
         txhash = sendTx(nodes[0], nodes[1], 0.00000001) #Send 1 satoshi
         if(txhash != None):
             db = db + txhash+" "+nodes[0]+" "+nodes[1]+"\n"
@@ -112,7 +116,7 @@ def printBalances():
 # Generate coins and transactions
 #TODO: randomly generate blocks from different nodes
 def initTxSim():
-    addMiner()
+    # addMiner()
 
     # Create wallets #
     nodeList = btcnet.getNodeList()
@@ -129,9 +133,13 @@ def initTxSim():
         fundNode(node,1)
         time.sleep(1)
 
-    # #Create block to confirm txs
-    genBlocks(100)
-    time.sleep(30)
+    #Create block to confirm txs
+    genBlocks(101)
+    time.sleep(100)
+
+    for node in nodeList:
+        print node+':'+str(getBalance(node))+' unconfirmed:'+str(getUnconfirmedBalance(node))
+
 
 def runTxSim(duration):
     global txdb
@@ -143,7 +151,8 @@ def runTxSim(duration):
     thrBlocks.start()
     
     #randomly generate transactions
-    numThreads = len(btcnet.getNodeList())/10
+    numThreads = int(round(len(btcnet.getNodeList())/10))
+    if(numThreads==0): numThreads=1
     print "Starting "+str(numThreads)+" tx threads"
     for i in range(numThreads):
         thrTx = threading.Thread(target=generateTransactions, args=(1,t_stop))

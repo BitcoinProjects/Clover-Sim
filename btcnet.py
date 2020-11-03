@@ -16,6 +16,7 @@ import txgen
 
 #Global
 IMG = "netsim"
+miner="nodeMiner"
 btcdir = "/btc/"
 bindir = "bin/"
 btcd = "bitcoind"
@@ -31,6 +32,8 @@ def execS(node, cmd, opts=""):
     execN(node, cmd+">/dev/null", opts)
 
 def execNR(node, cmd, opts=""):
+    assert(node != None)
+    assert(cmd != None)
     return os.popen("docker exec -t "+node+" "+btclix+" -regtest "+opts+" "+cmd).read().strip()
 
 def getNodeIP(node):
@@ -59,19 +62,37 @@ def getRandList(name, num, exclude):
 
 def getRandNode(name, exclude=""):
     rList = getRandList(name,1,exclude)
-    return rList[0]
+    if(len(rList)>0):
+        return rList[0]
 
 
 #Create a docker image with the binaries contained in 'bin/' and save it as 'netsim'
 def createNodeDock():
-    os.system("docker run -it -d --name "+IMG+" ubuntu /bin/bash")
+    os.system("docker run -it -d --name "+IMG+" ubuntu:latest /bin/bash")
     os.system("docker cp "+bindir+" "+IMG+":/btc")
-    os.system("docker commit "+IMG+" "+IMG+":latest")
+    os.system("docker commit "+IMG+" "+IMG+":node")
     os.system("docker stop "+IMG+" && docker rm "+IMG)
+
+def createNodeMiner():    
+    os.system("docker run -it -d --name "+miner+" ubuntu:latest /bin/bash")
+    os.system("docker cp "+"bin020/"+" "+miner+":/btc")
+    os.system("docker commit "+miner+" "+IMG+":miner")
+    os.system("docker stop "+miner+" && docker rm "+miner)
+
+#Start a new node container
+def runMiner():
+    os.system("docker run -it -d --name "+miner+" "+IMG+":miner "+btcdx+" "+btcopt)
+    print "Running "+miner+"("+getNodeIP(miner)+")"
+
+    if not os.path.exists('db'):
+        os.makedirs('db')
+
+    nodeDb = open("db/nodes.db","a")
+    nodeDb.write(miner+"="+getNodeIP(miner)+"\n")
 
 #Start a new node container
 def runNode(name, options):
-    os.system("docker run -it -d --name "+name+" "+IMG+" "+btcdx+" "+btcopt+" "+options)
+    os.system("docker run -it -d --name "+name+" "+IMG+":node "+btcdx+" "+btcopt+" "+options)
     print "Running "+name+"("+getNodeIP(name)+")"
 
     if not os.path.exists('db'):
@@ -111,6 +132,7 @@ def addNode(name, options):
 #Create 'numReach'+'numUnreach' containers and create random connections
 def createNetwork(numReach, numUnreach):
     createNodeDock()
+    createNodeMiner()
 
     print "num nodes="+str(numReach+numUnreach)
 
@@ -121,6 +143,9 @@ def createNetwork(numReach, numUnreach):
     #create unreachable nodes
     for i in range(1, numUnreach+1):
         runNode("nodeU"+str(i), "-listen=0")
+
+    #create miner
+    runMiner()
 
     time.sleep(2)
 

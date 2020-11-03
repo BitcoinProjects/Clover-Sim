@@ -57,9 +57,6 @@ def buildSpyDB():
         #Build transactions
         txs = os.popen("cat "+log+" | grep new | grep \"got inv: tx\|got proxytx\"").readlines()
         txDB = {}
-        txHashes = [None]*len(txs)
-        txTimes = [None]*len(txs)
-        txSources = [None]*len(txs)
         for i in range(len(txs)):
             txData = txs[i].rstrip().split(' ')
             if(txData[4] not in txDB.keys()):

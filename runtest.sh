@@ -1,0 +1,1 @@
+python btcnetsim.py create 20 30 && python firstspy.py run 3 && python btcnetsim.py txinit && python btcnetsim.py txrun 60 ; python firstspy.py stop && python btcnetsim.py delete ; python testEvaluator.py

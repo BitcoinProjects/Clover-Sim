@@ -77,13 +77,6 @@ def fundNode(node,amount):
     else:    
         print "Insufficient funds ("+str(balance)+")"
     
-# Generate miner node
-# def addMiner():
-#     node=btcnet.getRandNode("nodeR")
-#     miner=node+"Miner"
-
-#     btcnet.renameNode(node,miner)
-
 def getMiner():
     return btcnet.getRandNode("Miner")
 
@@ -137,8 +130,8 @@ def initTxSim():
     genBlocks(101)
     time.sleep(100)
 
-    for node in nodeList:
-        print node+':'+str(getBalance(node))+' unconfirmed:'+str(getUnconfirmedBalance(node))
+    # for node in nodeList:
+    #     print node+':'+str(getBalance(node))+' unconfirmed:'+str(getUnconfirmedBalance(node))
 
 
 def runTxSim(duration):

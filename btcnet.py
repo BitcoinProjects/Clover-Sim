@@ -131,19 +131,20 @@ def addNode(name, options):
     connectNodes(name)
 
 #Create 'numReach'+'numUnreach' containers and create random connections
-def createNetwork(numReach, numUnreach):
+def createNetwork(numReach, numUnreach, numOutProxies, numInProxies):
     createNodeDock()
     createNodeMiner()
 
     print "num nodes="+str(numReach+numUnreach)
 
     #create reachable nodes
+    relays="-inrelays="+numInProxies+" -outrelays="+numOutProxies
     for i in range(1, numReach+1):
-        runNode("nodeR"+str(i), "")
+        runNode("nodeR"+str(i), relays)
 
     #create unreachable nodes
     for i in range(1, numUnreach+1):
-        runNode("nodeU"+str(i), "-listen=0")
+        runNode("nodeU"+str(i), "-listen=0 "+relays)
 
     #create miner
     runMiner()
@@ -170,11 +171,12 @@ def dumpLogs():
         f.close()
 
 def stopContainers(name):
-    print "Stopping "+name+" containers"
+    print "Removing "+name+" containers"
     os.system("docker stop $(docker ps -a --filter=\"name="+name+"\" -q) > /dev/null")
     os.system("docker rm $(docker ps -a --filter=\"name="+name+"\" -q) > /dev/null")
 
 def stopNodes():
+    print "Stopping nodes"
     nodeList = getNodeList()
 
     for node in nodeList:
@@ -183,4 +185,5 @@ def stopNodes():
 # Stop and delete all 'node' containers
 def deleteNetwork():
     dumpLogs()
+    stopNodes()
     stopContainers("node")

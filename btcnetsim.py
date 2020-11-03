@@ -22,6 +22,8 @@ def main():
     if (sys.argv[1] == "create"):
         numReach = sys.argv[2]
         numUnreach = sys.argv[3]
+        numOutProxies = sys.argv[4]
+        numInProxies = sys.argv[4]
 
         #Cleanup
         if not os.path.exists('log'):
@@ -32,7 +34,7 @@ def main():
         else: os.system("rm db/*")
 
 
-        btcnet.createNetwork(int(numReach), int(numUnreach))
+        btcnet.createNetwork(int(numReach), int(numUnreach), numOutProxies, numInProxies)
 
         return
 

@@ -31,6 +31,7 @@ def dumpDB(name, db):
 
     f = open("db/"+name,"w+")
     f.write(json.dumps(db, cls=DateTimeEncoder, indent=4, sort_keys=True))
+    f.close()
 
 def buildSpyDB():
     global spyDB

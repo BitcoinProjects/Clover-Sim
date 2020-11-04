@@ -19,6 +19,8 @@ def readFileLS(file):
 
     for i in range(len(fLines)):
         fLines[i] = fLines[i].rstrip()
+
+    f.close()
     
     return fLines
 

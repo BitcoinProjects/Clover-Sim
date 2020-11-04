@@ -24,7 +24,7 @@ btcd = "bitcoind"
 btcli = "bitcoin-cli"
 btcdx = btcdir+btcd
 btclix = btcdir+btcli
-btcopt = "-regtest -fallbackfee=0.00000001 -dustrelayfee=0.0 -logips -debug=all -logtimemicros"
+btcopt = "-regtest -fallbackfee=0.00000001 -dustrelayfee=0.0"
 
 def execN(node, cmd, opts=""):
     os.system("docker exec -t "+node+" "+btclix+" -regtest "+opts+" "+cmd)
@@ -85,22 +85,11 @@ def runMiner():
     os.system("docker run -it -d --name "+miner+" "+IMG+":miner "+btcdx+" "+btcopt)
     print "Running "+miner+"("+getNodeIP(miner)+")"
 
-    if not os.path.exists('db'):
-        os.makedirs('db')
-
-    nodeDb = open("db/nodes.db","a")
-    nodeDb.write(miner+"="+getNodeIP(miner)+"\n")
-
 #Start a new node container
 def runNode(name, options):
-    os.system("docker run -it -d --name "+name+" "+IMG+":node "+btcdx+" "+btcopt+" "+options)
+    logs=" -logips -debug=all -logtimemicros"
+    os.system("docker run -it -d --name "+name+" "+IMG+":node "+btcdx+" "+btcopt+" "+options+logs)
     print "Running "+name+"("+getNodeIP(name)+")"
-
-    if not os.path.exists('db'):
-        os.makedirs('db')
-
-    nodeDb = open("db/nodes.db","a")
-    nodeDb.write(name+"="+getNodeIP(name)+"\n")
 
 def renameNode(name, newName):
     os.system("docker rename "+name+" "+newName)
@@ -124,30 +113,49 @@ def connectNodes(node):
     for rNode in randList:
         connectNode(node,rNode)
 
+    connectNode(node,miner)
+
 #Run a new node and connect it
 def addNode(name, options):
     runNode(name, options)
     time.sleep(2)
     connectNodes(name)
 
+    nodeDb = open("db/nodes.db","a")
+    nodeDb.write(name+"="+getNodeIP(name)+"\n")
+    nodeDb.close()
+
+
 #Create 'numReach'+'numUnreach' containers and create random connections
-def createNetwork(numReach, numUnreach, numOutProxies, numInProxies):
+def createNetwork(numReach, numUnreach, numOutProxies, numInProxies, probDiffuse):
     createNodeDock()
     createNodeMiner()
 
     print "num nodes="+str(numReach+numUnreach)
 
+    #create nodedb
+    if not os.path.exists('db'):
+        os.makedirs('db')
+
+    nodeDb = open("db/nodes.db","w")
     #create reachable nodes
     relays="-inrelays="+numInProxies+" -outrelays="+numOutProxies
     for i in range(1, numReach+1):
-        runNode("nodeR"+str(i), relays)
+        name="nodeR"+str(i)
+        runNode(name, relays)
+        nodeDb.write(name+"="+getNodeIP(name)+"\n")
 
     #create unreachable nodes
     for i in range(1, numUnreach+1):
-        runNode("nodeU"+str(i), "-listen=0 "+relays)
+        name="nodeU"+str(i)
+        runNode(name, "-listen=0 "+relays)
+        nodeDb.write(name+"="+getNodeIP(name)+"\n")
 
     #create miner
     runMiner()
+    nodeDb.write(miner+"="+getNodeIP(miner)+"\n")
+
+    nodeDb.close()
 
     time.sleep(2)
 

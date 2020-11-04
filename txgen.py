@@ -26,7 +26,9 @@ def genBTCAddress(node):
 # Returns node's Bitcoin address
 def getBTCAddress(node):
     addrs = json.loads(execWR(node," getaddressesbylabel \"\""))
-    return addrs.keys()[0]
+    if addrs.keys() > 0:
+        return addrs.keys()[0]
+    else: return None
 
 def getUnconfirmedBalance(node):
     balance = execWR(node, "getunconfirmedbalance")
@@ -119,16 +121,17 @@ def initTxSim():
 
     # Generate initial blocks
     genBlocks(110)
-    time.sleep(30)
+    time.sleep(60)
 
     # Send funds to all nodes #
     for node in nodeList:
         fundNode(node,1)
         time.sleep(1)
+    time.sleep(10)
 
     #Create block to confirm txs
     genBlocks(101)
-    time.sleep(100)
+    time.sleep(60)
 
     # for node in nodeList:
     #     print node+':'+str(getBalance(node))+' unconfirmed:'+str(getUnconfirmedBalance(node))
@@ -146,6 +149,7 @@ def runTxSim(duration):
     #randomly generate transactions
     numThreads = int(round(len(btcnet.getNodeList())/10))
     if(numThreads==0): numThreads=1
+    if(numThreads>4): numThreads=4
     print "Starting "+str(numThreads)+" tx threads"
     for i in range(numThreads):
         thrTx = threading.Thread(target=generateTransactions, args=(1,t_stop))
@@ -155,11 +159,13 @@ def runTxSim(duration):
     time.sleep(duration)
     t_stop.set()
 
-    time.sleep(5)
+    time.sleep(10)
     txdb.flush()
     txdb.close()
 
-    numtxs = len(open("db/txs.db","r").readlines())
+    txdb=open("db/txs.db","r")
+    numtxs = len(txdb.readlines())
     print "Generated "+str(numtxs)+" transactions"
+    txdb.close()
 
     #TODO: save 'txrun' state. so that when new nodes are created, if txrun, send them coins

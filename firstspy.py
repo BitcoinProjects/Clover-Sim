@@ -7,6 +7,7 @@ import json
 import datetime
 
 import btcnet
+import txgen
 
 spy="spy"
 spylog="log/"+spy+".log"
@@ -48,7 +49,6 @@ def buildSpyDB():
 
         #Build peers
         peers = os.popen("cat "+log+" | grep \"Added connection\"").readlines()
-        # addrs = os.popen("cat "+log+" | grep \"connection from\|trying connection\" | cut -d' ' -f4 | cut -d':' -f1").readlines()
         peerDB = {}
         for p in peers:
             pEls=p.rstrip().split(' ')
@@ -95,23 +95,16 @@ def estimateSources(printOutput):
 # Make a node a spy
 def addSpy(num):
     node=btcnet.getRandNode("node")
+   
     spyName = spy+str(num)
     btcnet.renameNode(node,spyName)
 
     #Connect to all nodes
     nodeList = btcnet.getNodeList()
     for node in nodeList:
-        btcnet.connectNode(spyName,node)
+	if "Miner" not in node:
+	        btcnet.connectNode(spyName,node)
 
-
-# def runSpyNode(num):
-#     spyName = spy+str(num)
-#     btcnet.runNode(spyName,"-debug=all -logtimemicros")
-#     time.sleep(2)
-
-#     nodeList = btcnet.getNodeList()
-#     for node in nodeList:
-#         btcnet.connectNode(spyName,node)
 
 def run(num_spies):
     for i in range(num_spies):
@@ -146,7 +139,7 @@ def main():
             num_spies = int(sys.argv[2])
 
         run(num_spies)
-        # time.sleep(10)
+        print("DONE\n")
 
     if (sys.argv[1] == "stop"):
         stop()

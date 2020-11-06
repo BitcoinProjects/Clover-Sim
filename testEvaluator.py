@@ -53,10 +53,11 @@ def main():
             if estSources[tx]['src'] == txDB[tx]:
                 trues+=1
 
-    rate = float(trues) / float(ptxs)
-    print "Overall Precision"
-    print "Correct: "+str(trues)+" over "+str(ptxs)+" -- "+"Rate (overall): "+ str(rate)
-    print " "
+    if ptxs > 0:
+        rate = float(trues) / float(ptxs)
+        print "Overall Precision"
+        print "Correct: "+str(trues)+" over "+str(ptxs)+" -- "+"Rate (overall): "+ str(rate)
+        print " "
 
     # Compute proxytx only
     trues = 0

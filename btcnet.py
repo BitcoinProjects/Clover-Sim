@@ -24,7 +24,10 @@ btcd = "bitcoind"
 btcli = "bitcoin-cli"
 btcdx = btcdir+btcd
 btclix = btcdir+btcli
-btcopt = "-regtest -fallbackfee=0.00000001 -dustrelayfee=0.0"
+btcopt = "-regtest -fallbackfee=0.00000001 -dustrelayfee=0.0 -mintxfee=0.00000001" #-nodebuglogfile
+
+def execBTC(node, opts=""):
+    os.system("docker exec -t "+node+" "+btcdx+" "+btcopt+" "+opts+" -daemon")
 
 def execN(node, cmd, opts=""):
     os.system("docker exec -t "+node+" "+btclix+" -regtest "+opts+" "+cmd)
@@ -69,26 +72,17 @@ def getRandNode(name, exclude=""):
 
 #Create a docker image with the binaries contained in 'bin/' and save it as 'netsim'
 def createNodeDock():
+    print "Creating node container"
     os.system("docker run -it -d --name "+IMG+" ubuntu:latest /bin/bash")
     os.system("docker cp "+bindir+" "+IMG+":/btc")
     os.system("docker commit "+IMG+" "+IMG+":node")
     os.system("docker stop "+IMG+" && docker rm "+IMG)
-
-def createNodeMiner():    
-    os.system("docker run -it -d --name "+miner+" ubuntu:latest /bin/bash")
-    os.system("docker cp "+minerBin+" "+miner+":/btc")
-    os.system("docker commit "+miner+" "+IMG+":miner")
-    os.system("docker stop "+miner+" && docker rm "+miner)
-
-#Start a new node container
-def runMiner():
-    os.system("docker run -it -d --name "+miner+" "+IMG+":miner "+btcdx+" "+btcopt)
-    print "Running "+miner+"("+getNodeIP(miner)+")"
+    print "DONE\n"
 
 #Start a new node container
 def runNode(name, options):
-    logs=" -logips -debug=all -logtimemicros"
-    os.system("docker run -it -d --name "+name+" "+IMG+":node "+btcdx+" "+btcopt+" "+options+logs)
+    os.system("docker run -it -d --name "+name+" "+IMG+":node /bin/bash")
+    execBTC(name, options)
     print "Running "+name+"("+getNodeIP(name)+")"
 
 def renameNode(name, newName):
@@ -107,17 +101,15 @@ def connectNode(nFrom,nTo):
 #Connect a node to 3 R nodes
 def connectNodes(node):
     #get random R nodes
-    randList = getRandList("nodeR",8,node)
+    randList = getRandList("nodeR",3,node)
 
     print node+":"
     for rNode in randList:
         connectNode(node,rNode)
 
-    connectNode(node,miner)
-
 #Run a new node and connect it
 def addNode(name, options):
-    runNode(name, options)
+    runNode(name, options+logs)
     time.sleep(2)
     connectNodes(name)
 
@@ -129,20 +121,21 @@ def addNode(name, options):
 #Create 'numReach'+'numUnreach' containers and create random connections
 def createNetwork(numReach, numUnreach, numOutProxies, numInProxies, probDiffuse):
     createNodeDock()
-    createNodeMiner()
 
     print "num nodes="+str(numReach+numUnreach)
 
     #create nodedb
     if not os.path.exists('db'):
         os.makedirs('db')
-
     nodeDb = open("db/nodes.db","w")
+
     #create reachable nodes
     relays="-inrelays="+numInProxies+" -outrelays="+numOutProxies
+    diffuse=" -probdiffuse="+probDiffuse
+    logs=" -logips -debug=all -logtimemicros"
     for i in range(1, numReach+1):
         name="nodeR"+str(i)
-        runNode(name, relays)
+        runNode(name, relays+diffuse+logs)
         nodeDb.write(name+"="+getNodeIP(name)+"\n")
 
     #create unreachable nodes
@@ -151,13 +144,8 @@ def createNetwork(numReach, numUnreach, numOutProxies, numInProxies, probDiffuse
         runNode(name, "-listen=0 "+relays)
         nodeDb.write(name+"="+getNodeIP(name)+"\n")
 
-    #create miner
-    runMiner()
-    nodeDb.write(miner+"="+getNodeIP(miner)+"\n")
-
     nodeDb.close()
-
-    time.sleep(2)
+    time.sleep(5)
 
     #create connections
     nodeList = getNodeList()
@@ -192,6 +180,8 @@ def stopNodes():
 
 # Stop and delete all 'node' containers
 def deleteNetwork():
+    print "Stopping network"
     dumpLogs()
     stopNodes()
     stopContainers("node")
+    print "DONE\n"

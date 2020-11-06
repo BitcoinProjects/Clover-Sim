@@ -2,7 +2,6 @@ import os
 import time
 import json
 import threading
-# import math
 
 import btcnet
 
@@ -38,7 +37,13 @@ def getUnconfirmedBalance(node):
 def getBalance(node):
     balance = execWR(node, "getbalance")
 
-    return float(balance)
+    try:
+      ret = float(balance)
+    except:
+      print("ERR:"+balance)
+      ret = -1
+
+    return ret
 
 # Send a transaction from node 'nFrom' to address 'nTo' with 'amount' coins
 def sendTx(nFrom, nTo, amount):
@@ -79,6 +84,10 @@ def fundNode(node,amount):
     else:    
         print "Insufficient funds ("+str(balance)+")"
     
+def addMiner():
+    node = btcnet.getRandNode("nodeR")
+    btcnet.renameNode(node,"nodeMiner")
+
 def getMiner():
     return btcnet.getRandNode("Miner")
 
@@ -111,7 +120,7 @@ def printBalances():
 # Generate coins and transactions
 #TODO: randomly generate blocks from different nodes
 def initTxSim():
-    # addMiner()
+    addMiner()
 
     # Create wallets #
     nodeList = btcnet.getNodeList()

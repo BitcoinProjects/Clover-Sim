@@ -36,12 +36,14 @@ def main():
 
 
         btcnet.createNetwork(int(numReach), int(numUnreach), numOutProxies, numInProxies, probDiffuse)
+        print("DONE\n")
 
         return
 
     # Delete the network
     if (sys.argv[1] == "delete"):
         btcnet.deleteNetwork()
+        print("DONE\n")
         return
 
     # Generate transactions

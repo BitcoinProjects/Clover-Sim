@@ -102,13 +102,11 @@ def addSpy(num):
     #Connect to all nodes
     nodeList = btcnet.getNodeList()
     for node in nodeList:
-	if "Miner" not in node:
-	        btcnet.connectNode(spyName,node)
+	    btcnet.connectNode(spyName,node)
 
 
 def run(num_spies):
     for i in range(num_spies):
-        # runSpyNode(i)
         addSpy(i)
 
 def stop():

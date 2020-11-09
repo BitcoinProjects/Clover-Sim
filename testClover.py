@@ -141,7 +141,32 @@ def main():
             
                 txsPath[tx]['path'] = insertHop(txsPath[tx]['path'], hop)
 
-    printDB(txsPath)
+    # printDB(txsPath)
     dumpDB("txPath.db",txsPath)
+
+    # Calculate average behavior
+    totHops = 0
+    unbroadcast = 0
+
+    for tx in txsPath:
+        proxyHops = 0
+        broadcasted = False
+
+        print tx+":"
+        for h in txsPath[tx]['path']:
+            if h['proxy'] == True: 
+                proxyHops+=1
+            if h['proxy'] == False: 
+               broadcasted=True
+               
+        print "Hops: "+str(proxyHops)
+        totHops+=proxyHops
+        print "Broadcast: "+ str(broadcasted)
+        if broadcasted == False:
+            unbroadcast+=1
+
+    avgHops = totHops / len(txsPath)
+    print "Average proxy hops: "+str(avgHops)
+    print "Unbroadcast transactions: "+str(unbroadcast)
 
 main()

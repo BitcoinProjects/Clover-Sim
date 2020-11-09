@@ -148,23 +148,26 @@ def main():
     totHops = 0
     unbroadcast = 0
 
+    txHops = {}
     for tx in txsPath:
+        txHops[tx]={}
         proxyHops = 0
         broadcasted = False
 
-        print tx+":"
         for h in txsPath[tx]['path']:
             if h['proxy'] == True: 
                 proxyHops+=1
             if h['proxy'] == False: 
                broadcasted=True
                
-        print "Hops: "+str(proxyHops)
+        txHops[tx]['hops'] = proxyHops
         totHops+=proxyHops
-        print "Broadcast: "+ str(broadcasted)
+        txHops[tx]['broadcast'] = broadcasted
         if broadcasted == False:
             unbroadcast+=1
+            print tx+" unbroadcast"
 
+    dumpDB("txHops.db",txHops)
     avgHops = totHops / len(txsPath)
     print "Average proxy hops: "+str(avgHops)
     print "Unbroadcast transactions: "+str(unbroadcast)

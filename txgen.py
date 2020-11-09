@@ -101,24 +101,24 @@ def generateTransactions(arg,stop_event):
         lastTx[n] = datetime.datetime.now() - datetime.timedelta(seconds=1)
 
     while not stop_event.is_set():
-        nodes = btcnet.getRandList("node",2,"nodeSpy")
+        nodes = btcnet.getRandList("node",2,"Spy")
         datetime.timedelta(seconds=1)
         # only generate 1 tx per second for each node
-        if datetime.datetime.now() < lastTx[nodes[0]] + datetime.timedelta(seconds=3):
+        if datetime.datetime.now() < lastTx[nodes[0]] + datetime.timedelta(seconds=5):
             continue
 
         txhash = sendTx(nodes[0], nodes[1], 0.00000001) #Send 1 satoshi
         if(txhash != None):
             db = db + txhash+" "+nodes[0]+" "+nodes[1]+"\n"
         lastTx[nodes[0]] = datetime.datetime.now()
-        # time.sleep(1) #Generate a transactions every 0.01 seconds
+        # time.sleep(0.1) #Generate a transactions every 0.01 seconds
     txdb.write(db)
 
 def generateBlocks(arg,stop_event):
     while not stop_event.is_set():
         print "Generating blocks"
-        genBlocks(100)
-        time.sleep(5) #Generate 100 blocks every 10 seconds
+        genBlocks(101)
+        time.sleep(10) #Generate 101 blocks every 10 seconds
 
         #TODO: check if any node need funds
         # fundNode(node,amount)
@@ -133,12 +133,14 @@ def printBalances():
 #TODO: randomly generate blocks from different nodes
 def initTxSim():
     addMiner()
+    time.sleep(3)
 
     # Create wallets #
     nodeList = btcnet.getNodeList()
     for node in nodeList:
         genBTCAddress(node)
         execWS(node, "settxfee 0.0")
+    time.sleep(3)
 
     # Generate initial blocks
     genBlocks(110)
@@ -148,10 +150,10 @@ def initTxSim():
     for node in nodeList:
         fundNode(node,1)
         time.sleep(1)
-    time.sleep(10)
+    time.sleep(30)
 
     #Create block to confirm txs
-    genBlocks(101)
+    genBlocks(110)
     time.sleep(60)
 
     # for node in nodeList:
@@ -164,8 +166,8 @@ def runTxSim(duration):
 
     #Generate blocks
     t_stop = threading.Event()
-    thrBlocks = threading.Thread(target=generateBlocks, args=(2,t_stop))
-    thrBlocks.start()
+    # thrBlocks = threading.Thread(target=generateBlocks, args=(2,t_stop))
+    # thrBlocks.start()
     
     #randomly generate transactions
     # numThreads = int(round(len(btcnet.getNodeList())/10))

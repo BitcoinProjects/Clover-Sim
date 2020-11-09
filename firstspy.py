@@ -100,10 +100,9 @@ def addSpy(num):
     btcnet.renameNode(node,spyName)
 
     #Connect to all nodes
-    nodeList = btcnet.getNodeList()
+    nodeList = btcnet.getNodeList("nodeR")
     for node in nodeList:
 	    btcnet.connectNode(spyName,node)
-
 
 def run(num_spies):
     for i in range(num_spies):

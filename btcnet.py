@@ -178,10 +178,12 @@ def stopNodes():
     for node in nodeList:
         execS(node,"stop")
 
+    time.sleep(5)
+
 # Stop and delete all 'node' containers
 def deleteNetwork():
     print "Stopping network"
-    dumpLogs()
     stopNodes()
+    dumpLogs()
     stopContainers("node")
     print "DONE\n"

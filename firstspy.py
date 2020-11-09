@@ -9,7 +9,7 @@ import datetime
 import btcnet
 import txgen
 
-spy="spy"
+spy="nodeSpy"
 spylog="log/"+spy+".log"
 spyRes="spy.db"
 

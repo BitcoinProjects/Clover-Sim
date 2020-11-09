@@ -36,9 +36,8 @@ def buildCloverDB():
     cloverDB = {}
     for f in logFiles:
         nodeName = re.search("node"+'.*',f).group(0)[0:-4]
-        if(nodeName != "nodeMiner"):
-            cloverDB[nodeName]={}
-            cloverDB[nodeName]['log']=f
+        cloverDB[nodeName]={}
+        cloverDB[nodeName]['log']=f
 
     for s in cloverDB:
         log = cloverDB[s]['log']
@@ -143,5 +142,6 @@ def main():
                 txsPath[tx]['path'] = insertHop(txsPath[tx]['path'], hop)
 
     printDB(txsPath)
+    dumpDB("txPath.db",txsPath)
 
 main()

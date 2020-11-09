@@ -2,6 +2,7 @@ import os
 import time
 import json
 import threading
+import datetime
 
 import btcnet
 
@@ -94,19 +95,30 @@ def getMiner():
 # 
 def generateTransactions(arg,stop_event):
     db = ""
+    nodeList = btcnet.getNodeList()
+    lastTx = {}
+    for n in nodeList:
+        lastTx[n] = datetime.datetime.now() - datetime.timedelta(seconds=1)
+
     while not stop_event.is_set():
-        nodes = btcnet.getRandList("node",2,"nodeMiner")
+        nodes = btcnet.getRandList("node",2,"nodeSpy")
+        datetime.timedelta(seconds=1)
+        # only generate 1 tx per second for each node
+        if datetime.datetime.now() < lastTx[nodes[0]] + datetime.timedelta(seconds=3):
+            continue
+
         txhash = sendTx(nodes[0], nodes[1], 0.00000001) #Send 1 satoshi
         if(txhash != None):
             db = db + txhash+" "+nodes[0]+" "+nodes[1]+"\n"
-        # time.sleep(0.01) #Generate a transactions every 0.01 seconds
+        lastTx[nodes[0]] = datetime.datetime.now()
+        # time.sleep(1) #Generate a transactions every 0.01 seconds
     txdb.write(db)
 
 def generateBlocks(arg,stop_event):
     while not stop_event.is_set():
         print "Generating blocks"
         genBlocks(100)
-        time.sleep(10) #Generate 100 blocks every 10 seconds
+        time.sleep(5) #Generate 100 blocks every 10 seconds
 
         #TODO: check if any node need funds
         # fundNode(node,amount)
@@ -156,9 +168,10 @@ def runTxSim(duration):
     thrBlocks.start()
     
     #randomly generate transactions
-    numThreads = int(round(len(btcnet.getNodeList())/10))
-    if(numThreads==0): numThreads=1
-    if(numThreads>4): numThreads=4
+    # numThreads = int(round(len(btcnet.getNodeList())/10))
+    # if(numThreads==0): numThreads=1
+    # if(numThreads>4): numThreads=4
+    numThreads = 1
     print "Starting "+str(numThreads)+" tx threads"
     for i in range(numThreads):
         thrTx = threading.Thread(target=generateTransactions, args=(1,t_stop))

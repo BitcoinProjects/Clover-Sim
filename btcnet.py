@@ -54,9 +54,10 @@ def getNodeList(name="node"):
 
 def getRandList(name, num, exclude):
     randList = getNodeList(name)
-    #remove 'exclude
-    if exclude in randList:
-        randList.remove(exclude)
+    #remove 'exclude'
+    for node in randList:
+        if exclude in node:
+            randList.remove(node)
     #shuffle
     random.shuffle(randList)
     #get first num elements
@@ -64,7 +65,7 @@ def getRandList(name, num, exclude):
 
     return randList
 
-def getRandNode(name, exclude=""):
+def getRandNode(name, exclude=" "):
     rList = getRandList(name,1,exclude)
     if(len(rList)>0):
         return rList[0]

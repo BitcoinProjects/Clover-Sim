@@ -170,10 +170,9 @@ def runTxSim(duration):
     # thrBlocks.start()
     
     #randomly generate transactions
-    # numThreads = int(round(len(btcnet.getNodeList())/10))
-    # if(numThreads==0): numThreads=1
-    # if(numThreads>4): numThreads=4
-    numThreads = 1
+    numThreads = int(round(len(btcnet.getNodeList())/10))
+    if(numThreads==0): numThreads=1
+    if(numThreads>4): numThreads=4
     print "Starting "+str(numThreads)+" tx threads"
     for i in range(numThreads):
         thrTx = threading.Thread(target=generateTransactions, args=(1,t_stop))

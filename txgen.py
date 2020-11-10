@@ -93,10 +93,11 @@ def getMiner():
     return btcnet.getRandNode("Miner")
 
 # 
+lastTx = {}
 def generateTransactions(arg,stop_event):
     db = ""
     nodeList = btcnet.getNodeList()
-    lastTx = {}
+    global lastTx
     for n in nodeList:
         lastTx[n] = datetime.datetime.now() - datetime.timedelta(seconds=1)
 

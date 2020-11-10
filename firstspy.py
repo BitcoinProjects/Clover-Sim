@@ -94,7 +94,7 @@ def estimateSources(printOutput):
 
 # Make a node a spy
 def addSpy(num):
-    node=btcnet.getRandNode("node", "Miner")
+    node=btcnet.getRandNode("nodeR", "Miner")
    
     spyName = spy+str(num)
     btcnet.renameNode(node,spyName)

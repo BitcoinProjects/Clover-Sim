@@ -25,6 +25,7 @@ def main():
         numOutProxies = sys.argv[4]
         numInProxies = sys.argv[5]
         probDiffuse = sys.argv[6]
+        epochTime = sys.argv[7]
 
         #Cleanup
         if not os.path.exists('log'):
@@ -35,7 +36,7 @@ def main():
         else: os.system("rm db/*")
 
 
-        btcnet.createNetwork(int(numReach), int(numUnreach), numOutProxies, numInProxies, probDiffuse)
+        btcnet.createNetwork(int(numReach), int(numUnreach), numOutProxies, numInProxies, probDiffuse, epochTime)
         print("DONE\n")
 
         return

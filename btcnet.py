@@ -120,7 +120,7 @@ def addNode(name, options):
 
 
 #Create 'numReach'+'numUnreach' containers and create random connections
-def createNetwork(numReach, numUnreach, numOutProxies, numInProxies, probDiffuse):
+def createNetwork(numReach, numUnreach, numOutProxies, numInProxies, probDiffuse, epochTime):
     createNodeDock()
 
     print "num nodes="+str(numReach+numUnreach)
@@ -133,6 +133,7 @@ def createNetwork(numReach, numUnreach, numOutProxies, numInProxies, probDiffuse
     #create reachable nodes
     relays="-inrelays="+numInProxies+" -outrelays="+numOutProxies
     diffuse=" -probdiffuse="+probDiffuse
+    epoch="-epoch="+epochTime
     logs=" -logips -debug=all -logtimemicros"
     opts=relays+diffuse+logs
     for i in range(1, numReach+1):

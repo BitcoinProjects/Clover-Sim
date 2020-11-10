@@ -134,15 +134,16 @@ def createNetwork(numReach, numUnreach, numOutProxies, numInProxies, probDiffuse
     relays="-inrelays="+numInProxies+" -outrelays="+numOutProxies
     diffuse=" -probdiffuse="+probDiffuse
     logs=" -logips -debug=all -logtimemicros"
+    opts=relays+diffuse+logs
     for i in range(1, numReach+1):
         name="nodeR"+str(i)
-        runNode(name, relays+diffuse+logs)
+        runNode(name, opts)
         nodeDb.write(name+"="+getNodeIP(name)+"\n")
 
     #create unreachable nodes
     for i in range(1, numUnreach+1):
         name="nodeU"+str(i)
-        runNode(name, "-listen=0 "+relays)
+        runNode(name, "-listen=0 "+opts)
         nodeDb.write(name+"="+getNodeIP(name)+"\n")
 
     nodeDb.close()

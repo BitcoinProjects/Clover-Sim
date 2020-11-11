@@ -56,7 +56,7 @@ def buildSpyDB():
         spyDB[s]['peers']=peerDB
 
         #Build transactions
-        txs = os.popen("cat "+log+" | grep new | grep \"got inv: tx\|got proxytx\"").readlines()
+        txs = os.popen("cat "+log+" | grep \"inv: tx\|new proxytx\" | grep new").readlines()
         txDB = {}
         for i in range(len(txs)):
             txData = txs[i].rstrip().split(' ')

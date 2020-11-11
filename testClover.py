@@ -51,7 +51,7 @@ def buildCloverDB():
         cloverDB[s]['peers']=peerDB
 
         #Build transactions
-        txs = os.popen("cat "+log+" | grep new | grep \"got inv: tx\|got proxytx\"").readlines()
+        txs = os.popen("cat "+log+" | grep \"inv: tx\|proxytx\" | grep new").readlines()
         txDB = {}
         for i in range(len(txs)):
             txData = txs[i].rstrip().split(' ')
@@ -61,11 +61,12 @@ def buildCloverDB():
                 if(txData[3]=='proxytx:'):
                     isProxy=True
                 else: isProxy=False
-                txDB[txData[4]] = {'time':txTime, 'source':txData[7][5:], 'proxy':isProxy}
+                txDB[txData[4]] = {'time':txTime, 'source':txData[7][5:], 'proxy':isProxy, 'type':txData[6]}
         cloverDB[s]['txs']=txDB
 
     # printDB()
     dumpDB("clover.db",cloverDB)
+    return cloverDB
 
 
 def readFileLS(file):
@@ -100,7 +101,7 @@ def insertHop(path, hop):
    return path
 
 def main():
-    buildCloverDB()
+    cloverDB=buildCloverDB()
     # printDB(cloverDB)
 
     # Parse nodeDB
@@ -144,7 +145,7 @@ def main():
     # printDB(txsPath)
     dumpDB("txPath.db",txsPath)
 
-    # Calculate average behavior
+    # Calculate stats
     totHops = 0
     unbroadcast = 0
 
@@ -171,5 +172,27 @@ def main():
     avgHops = totHops / len(txsPath)
     print "Average proxy hops: "+str(avgHops)
     print "Unbroadcast transactions: "+str(unbroadcast)
+
+    # inbound/outbound
+    gIn = 0
+    gOut = 0
+    for node in cloverDB:
+        if "Spy" in node: continue
+        print node+":"
+        inptxs = 0
+        outptxs = 0
+        for tx in cloverDB[node]['txs']:
+            if cloverDB[node]['txs'][tx]['proxy']==True:
+                if cloverDB[node]['txs'][tx]['type']=="inbound":
+                    inptxs+=1
+                else:
+                    outptxs+=1
+        print "inbound:"+str(inptxs)+" outbound:"+str(outptxs)
+        gIn+=inptxs
+        gOut+=outptxs
+
+    #TODO: avg produced transactions
+    print "Avg inbound:"+str(gIn/len(cloverDB.keys()))+" Avg outbound:"+str(gOut/len(cloverDB.keys()))
+        
 
 main()

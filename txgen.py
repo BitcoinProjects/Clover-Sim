@@ -87,6 +87,7 @@ def fundNode(node,amount):
     
 def addMiner():
     node = btcnet.getRandNode("nodeR")
+    print "Making "+node+" a miner"
     btcnet.renameNode(node,"nodeMiner")
 
 def getMiner():
@@ -99,7 +100,7 @@ def generateTransactions(arg,stop_event):
     nodeList = btcnet.getNodeList()
     global lastTx
     for n in nodeList:
-        lastTx[n] = datetime.datetime.now() - datetime.timedelta(seconds=1)
+        lastTx[n] = datetime.datetime.now() - datetime.timedelta(seconds=5)
 
     while not stop_event.is_set():
         nodes = btcnet.getRandList("node",2,"Spy")
@@ -134,14 +135,12 @@ def printBalances():
 #TODO: randomly generate blocks from different nodes
 def initTxSim():
     addMiner()
-    time.sleep(3)
 
     # Create wallets #
     nodeList = btcnet.getNodeList()
     for node in nodeList:
         genBTCAddress(node)
         execWS(node, "settxfee 0.0")
-    time.sleep(3)
 
     # Generate initial blocks
     genBlocks(110)
@@ -161,7 +160,7 @@ def initTxSim():
     #     print node+':'+str(getBalance(node))+' unconfirmed:'+str(getUnconfirmedBalance(node))
 
 
-def runTxSim(duration):
+def runTxSim(duration,threads):
     global txdb
     txdb = open("db/txs.db", "a+")
 
@@ -171,9 +170,7 @@ def runTxSim(duration):
     # thrBlocks.start()
     
     #randomly generate transactions
-    numThreads = int(round(len(btcnet.getNodeList())/10))
-    if(numThreads==0): numThreads=1
-    if(numThreads>4): numThreads=4
+    numThreads = threads
     print "Starting "+str(numThreads)+" tx threads"
     for i in range(numThreads):
         thrTx = threading.Thread(target=generateTransactions, args=(1,t_stop))

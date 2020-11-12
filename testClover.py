@@ -166,7 +166,7 @@ def main():
         txHops[tx]['broadcast'] = broadcasted
         if broadcasted == False:
             unbroadcast+=1
-            print tx+" unbroadcast"
+            # print tx+" unbroadcast"
 
     dumpDB("txHops.db",txHops)
     avgHops = totHops / len(txsPath)
@@ -174,11 +174,14 @@ def main():
     print "Unbroadcast transactions: "+str(unbroadcast)
 
     # inbound/outbound
-    gIn = 0
-    gOut = 0
+    gRIn = 0
+    gROut = 0
+    gUOut = 0
+    R=0
+    U=0
     for node in cloverDB:
         if "Spy" in node: continue
-        print node+":"
+        # print node+":"
         inptxs = 0
         outptxs = 0
         for tx in cloverDB[node]['txs']:
@@ -187,12 +190,20 @@ def main():
                     inptxs+=1
                 else:
                     outptxs+=1
-        print "inbound:"+str(inptxs)+" outbound:"+str(outptxs)
-        gIn+=inptxs
-        gOut+=outptxs
+        # print "inbound:"+str(inptxs)+" outbound:"+str(outptxs)
+        if "U" in node:
+            U+=1
+            gUOut+=outptxs
+        else:
+            R+=1
+            gRIn+=inptxs
+            gROut+=outptxs
+        
 
     #TODO: avg produced transactions
-    print "Avg inbound:"+str(gIn/len(cloverDB.keys()))+" Avg outbound:"+str(gOut/len(cloverDB.keys()))
+    print "R: avg inbound="+str(gRIn/R)+" avg outbound="+str(gROut/R)
+    if U>0:
+        print "U: avg outbound="+str(gUOut/U)
         
 
 main()

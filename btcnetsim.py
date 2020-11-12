@@ -27,15 +27,6 @@ def main():
         probDiffuse = sys.argv[6]
         epochTime = sys.argv[7]
 
-        #Cleanup
-        if not os.path.exists('log'):
-            os.makedirs('log')
-        else: os.system("rm log/*")
-        if not os.path.exists('db'):
-            os.makedirs('db')
-        else: os.system("rm db/*")
-
-
         btcnet.createNetwork(int(numReach), int(numUnreach), numOutProxies, numInProxies, probDiffuse, epochTime)
         print("DONE\n")
 
@@ -52,10 +43,30 @@ def main():
         txgen.initTxSim()
         return
 
+    if (sys.argv[1] == 'runsim'):
+        #cleanup logs
+        os.system("rm log/*")
+        # nodeList = btcnet.getNodeList()
+        # logFile="/root/.bitcoin/regtest/debug.log"
+        # tmpFile="/root/.bitcoin/regtest/tmp.log"
+        # for node in nodeList:
+        #     os.system('docker exec -t '+node+' sh -c "cat '+logFile+' | grep \'Added connection\' > '+tmpFile+'"')
+        #     os.system('docker exec -t '+node+' sh -c "mv '+tmpFile+' '+logFile+'"')
+        #cleanup txs
+        os.system("rm db/txs.db")
+
+        duration = int(sys.argv[2])
+        threads = duration = int(sys.argv[3])
+        txgen.runTxSim(duration,threads)
+
+        btcnet.dumpLogs()
+        return
+
     # Generate transactions
     if (sys.argv[1] == 'txrun'):
         duration = int(sys.argv[2])
-        txgen.runTxSim(duration)
+        threads = duration = int(sys.argv[3])
+        txgen.runTxSim(duration,threads)
         return
 
     # Generate changes in the network

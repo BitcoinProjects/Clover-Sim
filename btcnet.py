@@ -121,6 +121,9 @@ def addNode(name, options):
 
 #Create 'numReach'+'numUnreach' containers and create random connections
 def createNetwork(numReach, numUnreach, numOutProxies, numInProxies, probDiffuse, epochTime):
+    #cleanup
+    os.system("rm log/*")
+    
     createNodeDock()
 
     print "num nodes="+str(numReach+numUnreach)
@@ -129,6 +132,10 @@ def createNetwork(numReach, numUnreach, numOutProxies, numInProxies, probDiffuse
     if not os.path.exists('db'):
         os.makedirs('db')
     nodeDb = open("db/nodes.db","w")
+    #creat log dir
+    if not os.path.exists('log'):
+        os.makedirs('log')
+
 
     #create reachable nodes
     relays="-inrelays="+numInProxies+" -outrelays="+numOutProxies
@@ -189,4 +196,3 @@ def deleteNetwork():
     stopNodes()
     dumpLogs()
     stopContainers("node")
-    print "DONE\n"

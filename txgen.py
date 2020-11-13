@@ -77,9 +77,7 @@ def fundNode(node,amount):
     if node == miner:
         return
 
-    print("Funding "+node)
     balance = getBalance(miner)
-    
     if balance > amount :
         sendTx(miner, node, amount)
     else:    
@@ -148,8 +146,10 @@ def initTxSim():
 
     # Send funds to all nodes #
     for node in nodeList:
+        if "Spy" in node or "Miner" in node: continue
+
         fundNode(node,1)
-        time.sleep(1)
+        time.sleep(0.5)
     time.sleep(30)
 
     #Create block to confirm txs

@@ -105,12 +105,12 @@ def main():
     # printDB(cloverDB)
 
     # Parse nodeDB
-    nodes = readFileLS("db/nodes.db")
+    nodeList = readFileLS("db/nodes.db")
     global nodeDB
     nodeDB = {}
-    for i in range(len(nodes)):
-        nodes[i] = nodes[i].split("=")
-        nodeDB[nodes[i][0]] = nodes[i][1]
+    for i in range(len(nodeList)):
+        nodeList[i] = nodeList[i].split("=")
+        nodeDB[nodeList[i][0]] = nodeList[i][1]
 
     # Parse txDB
     txs = readFileLS("db/txs.db")
@@ -118,15 +118,15 @@ def main():
     for i in range(len(txs)):
         txs[i] = txs[i].split(" ")
         if(txs[i][1] in nodeDB):
-            txDB[txs[i][0]] = nodeDB[txs[i][1]]
+            txDB[txs[i][0]] = txs[i][1]
         else:
-            print "WARNING: missing: "+txs[i][0]
+            print "WARNING: missing: "+txs[i][1]
 
     # Analyze transactions
     txsPath = {}
     for tx in txDB:
         txsPath[tx] = {}
-        txsPath[tx]['SRC'] = getNodeByIP(txDB[tx])
+        txsPath[tx]['SRC'] = txDB[tx]
         txsPath[tx]['path'] = []
 
         #calculate path
@@ -173,6 +173,13 @@ def main():
     print "Average proxy hops: "+str(avgHops)
     print "Unbroadcast transactions: "+str(unbroadcast)
 
+    # txs per node
+    nodeTxs={}
+    for node in nodeList:
+        nodeTxs[node[0]]={'txs':0,'inptxs':0,'outptxs':0}
+    for tx in txDB:
+        nodeTxs[txDB[tx]]['txs']+=1
+
     # inbound/outbound
     gRIn = 0
     gROut = 0
@@ -181,26 +188,28 @@ def main():
     U=0
     for node in cloverDB:
         if "Spy" in node: continue
-        # print node+":"
+        
         inptxs = 0
         outptxs = 0
-        for tx in cloverDB[node]['txs']:
+        for tx in cloverDB[node]['txs']:        
             if cloverDB[node]['txs'][tx]['proxy']==True:
                 if cloverDB[node]['txs'][tx]['type']=="inbound":
-                    inptxs+=1
+                    nodeTxs[node]['inptxs']+=1
                 else:
-                    outptxs+=1
+                    nodeTxs[node]['outptxs']+=1
         # print "inbound:"+str(inptxs)+" outbound:"+str(outptxs)
         if "U" in node:
             U+=1
-            gUOut+=outptxs
+            gUOut+=nodeTxs[node]['outptxs']
         else:
             R+=1
-            gRIn+=inptxs
-            gROut+=outptxs
+            gRIn+=nodeTxs[node]['inptxs']
+            gROut+=nodeTxs[node]['outptxs']
         
+    # printDB(nodeTxs)
 
     #TODO: avg produced transactions
+    print "avg tx/node: "+str(float(len(txDB.keys()))/float(len(nodeDB.keys())))
     print "R: avg inbound="+str(gRIn/R)+" avg outbound="+str(gROut/R)
     if U>0:
         print "U: avg outbound="+str(gUOut/U)

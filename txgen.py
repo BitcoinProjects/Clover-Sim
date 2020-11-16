@@ -77,12 +77,17 @@ def fundNode(node,amount):
     if node == miner:
         return
 
-    balance = getBalance(miner)
-    print "balance: "+str(balance)
-    if balance > amount :
-        sendTx(miner, node, amount)
-    else:    
-        print "Insufficient funds ("+str(balance)+")"
+    # balance = getBalance(miner)
+    # print "balance: "+str(balance)
+    # if balance > amount :
+        # sendTx(miner, node, amount)
+    # else:    
+    #     print "Insufficient funds ("+str(balance)+")"
+
+    try:
+      sendTx(miner, node, amount)
+    except:
+        print "ERROR: could not send tx"
     
 def addMiner():
     node = btcnet.getRandNode("nodeR")
@@ -94,7 +99,7 @@ def getMiner():
 
 # 
 lastTx = {}
-sem = threading.Semaphore()
+mutex = threading.Lock()
 def generateTransactions(arg,stop_event):
     db = ""
     nodeList = btcnet.getNodeList()
@@ -103,13 +108,13 @@ def generateTransactions(arg,stop_event):
         lastTx[n] = datetime.datetime.now() - datetime.timedelta(seconds=5)
 
     while not stop_event.is_set():
-        sem.acquire()
+        mutex.acquire()
         nodes = btcnet.getRandList("node",2,"Spy")
         #Only use node if no other thread is working on it
         if nLocks[nodes[0]].acquire(False):
             # only generate 1 tx per second for each node
             if datetime.datetime.now() < lastTx[nodes[0]] + datetime.timedelta(seconds=5):
-                sem.release()
+                mutex.release()
                 continue
 
             txhash = sendTx(nodes[0], nodes[1], 0.00000001) #Send 1 satoshi
@@ -120,7 +125,7 @@ def generateTransactions(arg,stop_event):
 
             nLocks[nodes[0]].release()
 
-    sem.release()
+    mutex.release()
 
     txdb.write(db)
     txdb.flush()

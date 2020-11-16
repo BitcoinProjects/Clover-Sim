@@ -109,6 +109,7 @@ def generateTransactions(arg,stop_event):
         if nLocks[nodes[0]].acquire(False):
             # only generate 1 tx per second for each node
             if datetime.datetime.now() < lastTx[nodes[0]] + datetime.timedelta(seconds=5):
+                sem.release()
                 continue
 
             txhash = sendTx(nodes[0], nodes[1], 0.00000001) #Send 1 satoshi
@@ -119,7 +120,7 @@ def generateTransactions(arg,stop_event):
 
             nLocks[nodes[0]].release()
 
-        sem.release()
+    sem.release()
 
     txdb.write(db)
     txdb.flush()

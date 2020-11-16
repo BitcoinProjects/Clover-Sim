@@ -102,15 +102,19 @@ def generateTransactions(arg,stop_event):
 
     while not stop_event.is_set():
         nodes = btcnet.getRandList("node",2,"Spy")
-        # only generate 1 tx per second for each node
-        if datetime.datetime.now() < lastTx[nodes[0]] + datetime.timedelta(seconds=5):
-            continue
+        #Only use node if no other thread is working on it
+        if nLocks[nodes[0]].acquire(False):
+            # only generate 1 tx per second for each node
+            if datetime.datetime.now() < lastTx[nodes[0]] + datetime.timedelta(seconds=5):
+                continue
 
-        txhash = sendTx(nodes[0], nodes[1], 0.00000001) #Send 1 satoshi
-        if(txhash != None):
-            db = db + txhash+" "+nodes[0]+" "+nodes[1]+"\n"
-        lastTx[nodes[0]] = datetime.datetime.now()
-        # time.sleep(0.1) #Generate a transactions every 0.01 seconds
+            txhash = sendTx(nodes[0], nodes[1], 0.00000001) #Send 1 satoshi
+            if(txhash != None):
+                db = db + txhash+" "+nodes[0]+" "+nodes[1]+"\n"
+            lastTx[nodes[0]] = datetime.datetime.now()
+            # time.sleep(0.1) #Generate a transactions every 0.01 seconds
+
+            nLocks[nodes[0]].release()
     txdb.write(db)
 
 def generateBlocks(arg,stop_event):
@@ -167,6 +171,11 @@ def runTxSim(duration,threads):
     t_stop = threading.Event()
     # thrBlocks = threading.Thread(target=generateBlocks, args=(2,t_stop))
     # thrBlocks.start()
+    global nLocks
+    nLocks = {}
+    nodeList = btcnet.getNodeList(exclude="Spy")
+    for n in nodeList:
+        nLocks[n] = threading.RLock()
     
     #randomly generate transactions
     numThreads = threads

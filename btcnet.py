@@ -191,5 +191,4 @@ def stopNodes():
 def deleteNetwork():
     print "Stopping network"
     stopNodes()
-    dumpLogs()
     stopContainers("node")

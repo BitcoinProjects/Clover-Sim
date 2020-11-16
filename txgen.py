@@ -94,6 +94,7 @@ def getMiner():
 
 # 
 lastTx = {}
+sem = threading.Semaphore()
 def generateTransactions(arg,stop_event):
     db = ""
     nodeList = btcnet.getNodeList()
@@ -102,6 +103,7 @@ def generateTransactions(arg,stop_event):
         lastTx[n] = datetime.datetime.now() - datetime.timedelta(seconds=5)
 
     while not stop_event.is_set():
+        sem.acquire()
         nodes = btcnet.getRandList("node",2,"Spy")
         #Only use node if no other thread is working on it
         if nLocks[nodes[0]].acquire(False):
@@ -116,6 +118,9 @@ def generateTransactions(arg,stop_event):
             # time.sleep(0.1) #Generate a transactions every 0.01 seconds
 
             nLocks[nodes[0]].release()
+
+        sem.release()
+
     txdb.write(db)
     txdb.flush()
 
@@ -153,7 +158,7 @@ def initTxSim():
     for node in nodeList:
         if "Spy" in node or "Miner" in node: continue
 
-        fundNode(node,10)
+        fundNode(node,3)
         time.sleep(0.5)
     time.sleep(30)
 

@@ -78,6 +78,7 @@ def fundNode(node,amount):
         return
 
     balance = getBalance(miner)
+    print "balance: "+str(balance)
     if balance > amount :
         sendTx(miner, node, amount)
     else:    
@@ -121,7 +122,7 @@ def generateBlocks(arg,stop_event):
     while not stop_event.is_set():
         print "Generating blocks"
         genBlocks(101)
-        time.sleep(10) #Generate 101 blocks every 10 seconds
+        time.sleep(30) #Generate 101 blocks every 30 seconds
 
         #TODO: check if any node need funds
         # fundNode(node,amount)
@@ -151,7 +152,7 @@ def initTxSim():
     for node in nodeList:
         if "Spy" in node or "Miner" in node: continue
 
-        fundNode(node,1)
+        fundNode(node,10)
         time.sleep(0.5)
     time.sleep(30)
 
@@ -169,8 +170,8 @@ def runTxSim(duration,threads):
 
     #Generate blocks
     t_stop = threading.Event()
-    # thrBlocks = threading.Thread(target=generateBlocks, args=(2,t_stop))
-    # thrBlocks.start()
+    thrBlocks = threading.Thread(target=generateBlocks, args=(2,t_stop))
+    thrBlocks.start()
     global nLocks
     nLocks = {}
     nodeList = btcnet.getNodeList(exclude="Spy")

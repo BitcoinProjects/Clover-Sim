@@ -58,7 +58,7 @@ def main():
     # Generate transactions
     if (sys.argv[1] == 'txrun'):
         duration = int(sys.argv[2])
-        threads = duration = int(sys.argv[3])
+        threads = int(sys.argv[3])
         txgen.runTxSim(duration,threads)
         return
 

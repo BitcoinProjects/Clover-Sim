@@ -93,20 +93,24 @@ def estimateSources(printOutput):
     return estSources
 
 # Make a node a spy
-def addSpy(num):
+def addSpy(num,connect):
     node=btcnet.getRandNode("nodeR", "Miner")
    
     spyName = spy+str(num)
     btcnet.renameNode(node,spyName)
 
-    #Connect to all nodes
-    nodeList = btcnet.getNodeList("nodeR")
-    for node in nodeList:
-	    btcnet.connectNode(spyName,node)
+    if connect:
+        #Connect to all nodes
+        nodeList = btcnet.getNodeList("nodeR")
+        for node in nodeList:
+            btcnet.connectNode(spyName,node)
 
-def run(num_spies):
+def run(num_spies, num_connect):
     for i in range(num_spies):
-        addSpy(i)
+        if i < num_connect:
+            addSpy(i, True)
+        else: 
+            addSpy(i, False)
 
 def stop():
     if not os.path.exists('log'):
@@ -134,8 +138,11 @@ def main():
         num_spies = 1
         if len(sys.argv)>2:
             num_spies = int(sys.argv[2])
+        num_connect = num_spies
+        if len(sys.argv)>3:
+            num_connect = int(sys.argv[3])
 
-        run(num_spies)
+        run(num_spies,num_connect)
         print("DONE\n")
 
     if (sys.argv[1] == "stop"):

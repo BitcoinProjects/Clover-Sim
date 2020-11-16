@@ -117,6 +117,7 @@ def generateTransactions(arg,stop_event):
 
             nLocks[nodes[0]].release()
     txdb.write(db)
+    txdb.flush()
 
 def generateBlocks(arg,stop_event):
     while not stop_event.is_set():
@@ -181,16 +182,19 @@ def runTxSim(duration,threads):
     #randomly generate transactions
     numThreads = threads
     print "Starting "+str(numThreads)+" tx threads"
+    threads=[]
     for i in range(numThreads):
         thrTx = threading.Thread(target=generateTransactions, args=(1,t_stop))
         thrTx.start()
+        threads.append(thrTx)
 
     #Stop simulation after 'duration'
     time.sleep(duration)
     t_stop.set()
 
-    time.sleep(10)
-    txdb.flush()
+    for t in threads:
+        t.join()
+
     txdb.close()
 
     txdb=open("db/txs.db","r")

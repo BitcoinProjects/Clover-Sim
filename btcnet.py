@@ -45,19 +45,19 @@ def getNodeIP(node):
 
     return ip
 
-def getNodeList(name="node"):
-    nodeList = os.popen("docker ps --filter=\"name="+name+"\" --format '{{.Names}}'").readlines()
-    for i in range(len(nodeList)):
-        nodeList[i] = nodeList[i].rstrip()
+def getNodeList(name="node", exclude=" "):
+    nodes = os.popen("docker ps --filter=\"name="+name+"\" --format '{{.Names}}'").readlines()
+    nodeList = []
+    for i in range(len(nodes)):
+        n = nodes[i].rstrip()
+        if exclude not in n:
+            nodeList.append(n)
 
     return nodeList
 
-def getRandList(name, num, exclude):
-    randList = getNodeList(name)
-    #remove 'exclude'
-    for node in randList:
-        if exclude in node:
-            randList.remove(node)
+def getRandList(name, num, exclude=" "):
+    randList = getNodeList(name, exclude)
+    
     #shuffle
     random.shuffle(randList)
     #get first num elements
@@ -120,10 +120,7 @@ def addNode(name, options):
 
 
 #Create 'numReach'+'numUnreach' containers and create random connections
-def createNetwork(numReach, numUnreach, numOutProxies, numInProxies, probDiffuse, epochTime):
-    #cleanup
-    os.system("rm log/*")
-    
+def createNetwork(numReach, numUnreach, numOutProxies, numInProxies, probDiffuse, epochTime):   
     createNodeDock()
 
     print "num nodes="+str(numReach+numUnreach)

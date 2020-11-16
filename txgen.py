@@ -102,7 +102,6 @@ def generateTransactions(arg,stop_event):
 
     while not stop_event.is_set():
         nodes = btcnet.getRandList("node",2,"Spy")
-        datetime.timedelta(seconds=1)
         # only generate 1 tx per second for each node
         if datetime.datetime.now() < lastTx[nodes[0]] + datetime.timedelta(seconds=5):
             continue
@@ -162,7 +161,7 @@ def initTxSim():
 
 def runTxSim(duration,threads):
     global txdb
-    txdb = open("db/txs.db", "a+")
+    txdb = open("db/txs.db", "a")
 
     #Generate blocks
     t_stop = threading.Event()

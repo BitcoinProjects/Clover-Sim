@@ -27,6 +27,10 @@ def main():
         probDiffuse = sys.argv[6]
         epochTime = sys.argv[7]
 
+        #cleanup logs
+        os.system("rm log/*")
+        os.system("rm db/*.db")
+
         btcnet.createNetwork(int(numReach), int(numUnreach), numOutProxies, numInProxies, probDiffuse, epochTime)
         print("DONE\n")
 
@@ -44,17 +48,6 @@ def main():
         return
 
     if (sys.argv[1] == 'runsim'):
-        #cleanup logs
-        os.system("rm log/*")
-        # nodeList = btcnet.getNodeList()
-        # logFile="/root/.bitcoin/regtest/debug.log"
-        # tmpFile="/root/.bitcoin/regtest/tmp.log"
-        # for node in nodeList:
-        #     os.system('docker exec -t '+node+' sh -c "cat '+logFile+' | grep \'Added connection\' > '+tmpFile+'"')
-        #     os.system('docker exec -t '+node+' sh -c "mv '+tmpFile+' '+logFile+'"')
-        #cleanup txs
-        os.system("rm db/txs.db")
-
         duration = int(sys.argv[2])
         threads = duration = int(sys.argv[3])
         txgen.runTxSim(duration,threads)

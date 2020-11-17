@@ -153,7 +153,7 @@ def initTxSim():
     print "Create wallets..."
     nodeList = btcnet.getNodeList()
     for node in nodeList:
-        print "Iniziating "+node
+        print "Initiating "+node
         genBTCAddress(node)
         execWS(node, "settxfee 0.0")
 

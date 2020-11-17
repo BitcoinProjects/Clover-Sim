@@ -117,7 +117,10 @@ def generateTransactions(arg,stop_event):
                 continue
 
             mutex.acquire()
-            txhash = sendTx(nodes[0], nodes[1], 0.00000001) #Send 1 satoshi
+            try:
+                txhash = sendTx(nodes[0], nodes[1], 0.00000001) #Send 1 satoshi
+            except:
+                print "ERROR: could not send tx"
             mutex.release()
             if(txhash != None):
                 db = db + txhash+" "+nodes[0]+" "+nodes[1]+"\n"

@@ -177,7 +177,7 @@ def dumpLogs():
 def stopContainers(name):
     print "Removing "+name+" containers"
     os.system("docker stop $(docker ps -a --filter=\"name="+name+"\" -q) > /dev/null")
-    os.system("docker rm $(docker ps -a --filter=\"name="+name+"\" -q) > /dev/null")
+    # os.system("docker rm $(docker ps -a --filter=\"name="+name+"\" -q) > /dev/null")
 
 def stopNodes():
     print "Stopping nodes"

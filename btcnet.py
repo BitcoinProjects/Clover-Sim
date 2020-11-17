@@ -102,7 +102,7 @@ def connectNode(nFrom,nTo):
 #Connect a node to 3 R nodes
 def connectNodes(node):
     #get random R nodes
-    randList = getRandList("nodeR",3,node)
+    randList = getRandList("nodeR",4,node)
 
     print node+":"
     for rNode in randList:

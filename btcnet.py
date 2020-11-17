@@ -138,7 +138,7 @@ def createNetwork(numReach, numUnreach, numOutProxies, numInProxies, probDiffuse
     relays="-inrelays="+numInProxies+" -outrelays="+numOutProxies
     diffuse=" -probdiffuse="+probDiffuse
     epoch="-epoch="+epochTime
-    logs=" -logips -debug=all -logtimemicros"
+    logs=" -logips -debug=net -logtimemicros"
     opts=relays+diffuse+logs
     for i in range(1, numReach+1):
         name="nodeR"+str(i)

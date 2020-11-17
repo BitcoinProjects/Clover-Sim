@@ -157,19 +157,19 @@ def initTxSim():
 
     # Generate initial blocks
     genBlocks(110)
-    time.sleep(60)
+    time.sleep(30)
 
     # Send funds to all nodes #
     for node in nodeList:
         if "Spy" in node or "Miner" in node: continue
 
         fundNode(node,3)
-        time.sleep(0.5)
+        time.sleep(0.1)
     time.sleep(30)
 
     #Create block to confirm txs
     genBlocks(110)
-    time.sleep(60)
+    time.sleep(30)
 
     # for node in nodeList:
     #     print node+':'+str(getBalance(node))+' unconfirmed:'+str(getUnconfirmedBalance(node))

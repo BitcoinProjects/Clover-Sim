@@ -125,7 +125,7 @@ def stop():
         f.close()
 
     os.system("docker stop $(docker ps -a --filter=\"name="+spy+"\" -q) > /dev/null")
-    os.system("docker rm $(docker ps -a --filter=\"name="+spy+"\" -q) > /dev/null")
+    # os.system("docker rm $(docker ps -a --filter=\"name="+spy+"\" -q) > /dev/null")
 
 def main():
     if(len(sys.argv)<2):

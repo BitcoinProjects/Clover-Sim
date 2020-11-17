@@ -150,6 +150,7 @@ def initTxSim():
     addMiner()
 
     # Create wallets #
+    print "Create wallets"
     nodeList = btcnet.getNodeList()
     for node in nodeList:
         genBTCAddress(node)

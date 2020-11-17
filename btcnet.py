@@ -82,7 +82,7 @@ def createNodeDock():
 
 #Start a new node container
 def runNode(name, options):
-    os.system("docker run -it -d --name "+name+" "+IMG+":node /bin/bash")
+    os.system("docker run -it -d --rm --network=btcnet --name "+name+" "+IMG+":node /bin/bash")
     execBTC(name, options)
     print "Running "+name+"("+getNodeIP(name)+")"
 
@@ -120,8 +120,9 @@ def addNode(name, options):
 
 
 #Create 'numReach'+'numUnreach' containers and create random connections
-def createNetwork(numReach, numUnreach, numOutProxies, numInProxies, probDiffuse, epochTime):   
+def createNetwork(numReach, numUnreach, numOutProxies, numInProxies, probDiffuse, epochTime):
     createNodeDock()
+    os.system("docker network create --internal --subnet 10.1.0.0/16 btcnet")
 
     print "num nodes="+str(numReach+numUnreach)
 

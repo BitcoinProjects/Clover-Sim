@@ -165,8 +165,12 @@ def initTxSim():
     for node in nodeList:
         if "Spy" in node or "Miner" in node: continue
 
-        fundNode(node,3)
-        time.sleep(0.1)
+        try:
+            fundNode(node,3)
+        except:
+            #try 2 times
+            fundNode(node,3)
+        time.sleep(0.2)
     time.sleep(30)
 
     #Create block to confirm txs

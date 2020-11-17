@@ -170,6 +170,7 @@ def initTxSim():
             fundNode(node,3)
         except:
             #try 2 times
+            time.sleep(0.5)
             fundNode(node,3)
         time.sleep(0.2)
     time.sleep(30)

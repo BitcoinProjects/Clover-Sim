@@ -52,7 +52,6 @@ def main():
         threads = int(sys.argv[3])
         txgen.runTxSim(duration,threads)
 
-        btcnet.dumpLogs()
         return
 
     # Generate transactions

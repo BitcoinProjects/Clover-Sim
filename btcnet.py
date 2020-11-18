@@ -187,6 +187,7 @@ def stopNodes():
         execS(node,"stop")
 
     time.sleep(5)
+    dumpLogs()
 
 # Stop and delete all 'node' containers
 def deleteNetwork():

@@ -105,15 +105,16 @@ def generateTransactions(arg,stop_event):
     nodeList = btcnet.getNodeList()
     global lastTx
     global mutex
+    txfreq = datetime.timedelta(seconds=1)
     for n in nodeList:
-        lastTx[n] = datetime.datetime.now() - datetime.timedelta(seconds=5)
+        lastTx[n] = datetime.datetime.now() - txfreq
 
     while not stop_event.is_set():
         nodes = btcnet.getRandList("node",2,"Spy")
         #Only use node if no other thread is working on it
         if nLocks[nodes[0]].acquire(False):
             # only generate 1 tx per second for each node
-            if datetime.datetime.now() < lastTx[nodes[0]] + datetime.timedelta(seconds=5):
+            if datetime.datetime.now() < lastTx[nodes[0]] + txfreq:
                 continue
 
             mutex.acquire()
@@ -125,7 +126,6 @@ def generateTransactions(arg,stop_event):
             if(txhash != None):
                 db = db + txhash+" "+nodes[0]+" "+nodes[1]+"\n"
             lastTx[nodes[0]] = datetime.datetime.now()
-            # time.sleep(0.1) #Generate a transactions every 0.01 seconds
 
             nLocks[nodes[0]].release()
 
@@ -136,7 +136,7 @@ def generateBlocks(arg,stop_event):
     while not stop_event.is_set():
         print "Generating blocks"
         genBlocks(101)
-        time.sleep(30) #Generate 101 blocks every 30 seconds
+        time.sleep(10) #Generate 101 blocks every x seconds
 
         #TODO: check if any node need funds
         # fundNode(node,amount)
@@ -163,7 +163,7 @@ def initTxSim():
 
     # Generate initial blocks
     genBlocks(110)
-    time.sleep(30)
+    time.sleep(10)
 
     # Send funds to all nodes #
     for node in nodeList:
@@ -176,11 +176,11 @@ def initTxSim():
             time.sleep(0.5)
             fundNode(node,3)
         time.sleep(0.2)
-    time.sleep(30)
+    time.sleep(10)
 
     #Create block to confirm txs
     genBlocks(110)
-    time.sleep(30)
+    time.sleep(10)
 
     # for node in nodeList:
     #     print node+':'+str(getBalance(node))+' unconfirmed:'+str(getUnconfirmedBalance(node))
@@ -192,8 +192,8 @@ def runTxSim(duration,threads):
 
     #Generate blocks
     t_stop = threading.Event()
-    thrBlocks = threading.Thread(target=generateBlocks, args=(2,t_stop))
-    thrBlocks.start()
+    # thrBlocks = threading.Thread(target=generateBlocks, args=(2,t_stop))
+    # thrBlocks.start()
     global nLocks
     nLocks = {}
     nodeList = btcnet.getNodeList(exclude="Spy")
@@ -222,5 +222,7 @@ def runTxSim(duration,threads):
     numtxs = len(txdb.readlines())
     print "Generated "+str(numtxs)+" transactions"
     txdb.close()
+
+    time.sleep(30)
 
     #TODO: save 'txrun' state. so that when new nodes are created, if txrun, send them coins

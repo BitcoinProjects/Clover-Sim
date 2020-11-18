@@ -51,17 +51,17 @@ def buildCloverDB():
         cloverDB[s]['peers']=peerDB
 
         #Build transactions
-        txs = os.popen("cat "+log+" | grep \"inv: tx\|proxytx\" | grep new").readlines()
-        txDB = {}
+        txs = os.popen("cat "+log+" | grep \"inv: tx\|proxytx\|Requesting tx\" | grep new").readlines()
+        txDB = []
         for i in range(len(txs)):
             txData = txs[i].rstrip().split(' ')
-            if(txData[4] not in txDB.keys()):
-                # print txData
-                txTime = txData[0].replace('Z','').replace('T',' ') #txTime = AAAA-MM-DD HH:MM:SS
-                if(txData[3]=='proxytx:'):
-                    isProxy=True
-                else: isProxy=False
-                txDB[txData[4]] = {'time':txTime, 'source':txData[7][5:], 'proxy':isProxy, 'type':txData[6]}
+        
+            txTime = txData[0].replace('Z','').replace('T',' ') #txTime = AAAA-MM-DD HH:MM:SS
+            if(txData[3]=='proxytx:'):
+                isProxy=True
+            else: isProxy=False
+            txDB.append({'tx':txData[4], 'time':txTime, 'source':txData[7][5:], 'proxy':isProxy, 'type':txData[6]})
+        
         cloverDB[s]['txs']=txDB
 
     # printDB()
@@ -100,6 +100,15 @@ def insertHop(path, hop):
    path = path[:index] + [hop] + path[index:]
    return path
 
+def getBrodcasted():
+    broadcasted = []
+    logs = os.popen("cat log/node*.log | grep \"Broadcasting proxytx\"").readlines()
+    for tx in logs:
+        tEls=tx.rstrip().split(' ')
+        broadcasted.append(tEls[4])
+
+    return broadcasted
+
 def main():
     cloverDB=buildCloverDB()
     # printDB(cloverDB)
@@ -124,23 +133,30 @@ def main():
 
     # Analyze transactions
     txsPath = {}
+    #get broadcasted
+    broadcastedTxs = getBrodcasted()
+
     for tx in txDB:
         txsPath[tx] = {}
         txsPath[tx]['SRC'] = txDB[tx]
         txsPath[tx]['path'] = []
+        isBroadcasted = (tx in broadcastedTxs)
+        # if tx in broadcasted:
+        txsPath[tx]['broadcasted'] = isBroadcasted
+        # else:
 
         #calculate path
         for n in cloverDB:
-            if tx in cloverDB[n]['txs']:
-                # print cloverDB[n]['txs'][tx]
-                h = cloverDB[n]['txs'][tx]
-                hop = {}
-                hop['node'] = n
-                # hop['from'] = getNodeByIP(cloverDB[n]['peers'][h['source']])
-                hop['proxy'] = h['proxy']
-                hop['time'] = h['time']
-            
-                txsPath[tx]['path'] = insertHop(txsPath[tx]['path'], hop)
+            for t in cloverDB[n]['txs']:
+                if(t['tx'] == tx):
+                    hop = {}
+                    hop['node'] = n
+                    hop['proxy'] = t['proxy']
+                    hop['time'] = t['time']
+                
+                    txsPath[tx]['path'] = insertHop(txsPath[tx]['path'], hop)
+
+        
 
     # printDB(txsPath)
     dumpDB("txPath.db",txsPath)
@@ -157,16 +173,15 @@ def main():
 
         for h in txsPath[tx]['path']:
             if h['proxy'] == True: 
-                proxyHops+=1
-            if h['proxy'] == False: 
-               broadcasted=True
-               
+                proxyHops+=1       
         txHops[tx]['hops'] = proxyHops
         totHops+=proxyHops
-        txHops[tx]['broadcast'] = broadcasted
-        if broadcasted == False:
+
+        if tx in broadcastedTxs: 
+            txHops[tx]['broadcast'] = True
+        else:
             unbroadcast+=1
-            # print tx+" unbroadcast"
+            print tx+" unbroadcast"
 
     dumpDB("txHops.db",txHops)
     avgHops = totHops / len(txsPath)
@@ -191,9 +206,9 @@ def main():
         
         inptxs = 0
         outptxs = 0
-        for tx in cloverDB[node]['txs']:        
-            if cloverDB[node]['txs'][tx]['proxy']==True:
-                if cloverDB[node]['txs'][tx]['type']=="inbound":
+        for tx in cloverDB[node]['txs']:
+            if tx['proxy']==True:
+                if tx['type']=="inbound":
                     nodeTxs[node]['inptxs']+=1
                 else:
                     nodeTxs[node]['outptxs']+=1

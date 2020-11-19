@@ -109,14 +109,14 @@ def connectNodes(node):
         connectNode(node,rNode)
 
 #Run a new node and connect it
-def addNode(name, options):
-    runNode(name, options+logs)
-    time.sleep(2)
-    connectNodes(name)
+# def addNode(name, options):
+#     runNode(name, options)
+#     time.sleep(2)
+#     connectNodes(name)
 
-    nodeDb = open("db/nodes.db","a")
-    nodeDb.write(name+"="+getNodeIP(name)+"\n")
-    nodeDb.close()
+#     nodeDb = open("db/nodes.db","a")
+#     nodeDb.write(name+"="+getNodeIP(name)+"\n")
+#     nodeDb.close()
 
 
 #Create 'numReach'+'numUnreach' containers and create random connections
@@ -136,11 +136,12 @@ def createNetwork(numReach, numUnreach, numOutProxies, numInProxies, probDiffuse
 
 
     #create reachable nodes
-    relays="-inrelays="+numInProxies+" -outrelays="+numOutProxies
+    outconns=" -outbound=4"
+    relays=" -inrelays="+numInProxies+" -outrelays="+numOutProxies
     diffuse=" -probdiffuse="+probDiffuse
-    epoch="-epoch="+epochTime
+    epoch=" -epoch="+epochTime
     logs=" -logips -debug=net -logtimemicros"
-    opts=relays+diffuse+logs
+    opts=outconns+relays+diffuse+logs
     for i in range(1, numReach+1):
         name="nodeR"+str(i)
         runNode(name, opts)

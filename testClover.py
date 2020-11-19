@@ -51,7 +51,7 @@ def buildCloverDB():
         cloverDB[s]['peers']=peerDB
 
         #Build transactions
-        txs = os.popen("cat "+log+" | grep \"inv: tx\|proxytx\|Requesting tx\" | grep new").readlines()
+        txs = os.popen("cat "+log+" | grep \"inv: tx\|proxytx\" | grep new").readlines()
         txDB = []
         for i in range(len(txs)):
             txData = txs[i].rstrip().split(' ')
@@ -60,7 +60,8 @@ def buildCloverDB():
             if(txData[3]=='proxytx:'):
                 isProxy=True
             else: isProxy=False
-            txDB.append({'tx':txData[4], 'time':txTime, 'source':txData[7][5:], 'proxy':isProxy, 'type':txData[6]})
+            if(isProxy):
+                txDB.append({'tx':txData[4], 'time':txTime, 'source':txData[7][5:], 'proxy':isProxy, 'type':txData[6]})
         
         cloverDB[s]['txs']=txDB
 

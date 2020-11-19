@@ -72,10 +72,10 @@ def getRandNode(name, exclude=" "):
 
 
 #Create a docker image with the binaries contained in 'bin/' and save it as 'netsim'
-def createNodeDock():
+def createNodeDock(bdir=bindir):
     print "Creating node container"
     os.system("docker run -it -d --name "+IMG+" ubuntu:latest /bin/bash")
-    os.system("docker cp "+bindir+" "+IMG+":/btc")
+    os.system("docker cp "+bdir+" "+IMG+":/btc")
     os.system("docker commit "+IMG+" "+IMG+":node")
     os.system("docker stop "+IMG+" && docker rm "+IMG)
     print "DONE\n"
@@ -120,8 +120,8 @@ def connectNodes(node):
 
 
 #Create 'numReach'+'numUnreach' containers and create random connections
-def createNetwork(numReach, numUnreach, numOutProxies, numInProxies, probDiffuse, epochTime):
-    createNodeDock()
+def createNetwork(bdir,numReach, numUnreach, opts):
+    createNodeDock(bdir)
     os.system("docker network create --internal --subnet 10.1.0.0/16 btcnet")
 
     print "num nodes="+str(numReach+numUnreach)
@@ -136,15 +136,10 @@ def createNetwork(numReach, numUnreach, numOutProxies, numInProxies, probDiffuse
 
 
     #create reachable nodes
-    outconns=" -outbound=4"
-    relays=" -inrelays="+numInProxies+" -outrelays="+numOutProxies
-    diffuse=" -probdiffuse="+probDiffuse
-    epoch=" -epoch="+epochTime
     logs=" -logips -debug=net -logtimemicros"
-    opts=outconns+relays+diffuse+logs
     for i in range(1, numReach+1):
         name="nodeR"+str(i)
-        runNode(name, opts)
+        runNode(name, opts+logs)
         nodeDb.write(name+"="+getNodeIP(name)+"\n")
 
     #create unreachable nodes
@@ -162,6 +157,20 @@ def createNetwork(numReach, numUnreach, numOutProxies, numInProxies, probDiffuse
         connectNodes(node)
 
     return    
+
+def createCloverNetwork(numReach=20, numUnreach=0, numOutProxies=2, numInProxies=2, probDiffuse=30, epochTime=30):
+    outconns=" -outbound=4"
+    relays=" -inrelays="+numInProxies+" -outrelays="+numOutProxies
+    diffuse=" -probdiffuse="+probDiffuse
+    epoch=" -epoch="+epochTime
+    opts=outconns+relays+diffuse
+
+    bdir = "bin/clover/"
+    createNetwork(bdir, numReach, numUnreach, opts)
+
+def createStandardNetwork(numReach=20, numUnreach=0):
+    bdir = "bin/std/"
+    createNetwork(bdir, numReach, numUnreach, "-outbound=4")
 
 # Dump logs
 def dumpLogs():

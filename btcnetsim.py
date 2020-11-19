@@ -20,20 +20,25 @@ import txgen
 def main():
     # Create the network
     if (sys.argv[1] == "create"):
-        numReach = sys.argv[2]
-        numUnreach = sys.argv[3]
-        numOutProxies = sys.argv[4]
-        numInProxies = sys.argv[5]
-        probDiffuse = sys.argv[6]
-        epochTime = sys.argv[7]
+        nettype = sys.argv[2]
+        numReach = sys.argv[3]
+        numUnreach = sys.argv[4]
 
         #cleanup logs
         os.system("rm log/*")
         os.system("rm db/*.db")
 
-        btcnet.createNetwork(int(numReach), int(numUnreach), numOutProxies, numInProxies, probDiffuse, epochTime)
-        print("DONE\n")
+        if nettype == "std":
+            btcnet.createStandardNetwork(int(numReach), int(numUnreach))
+        else:
+            numOutProxies = sys.argv[5]
+            numInProxies = sys.argv[6]
+            probDiffuse = sys.argv[7]
+            epochTime = sys.argv[8]
 
+            btcnet.createCloverNetwork(int(numReach), int(numUnreach), numOutProxies, numInProxies, probDiffuse, epochTime)
+    
+        print("DONE\n")
         return
 
     # Delete the network

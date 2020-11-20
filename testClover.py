@@ -156,6 +156,8 @@ def main():
                     hop['time'] = t['time']
                 
                     txsPath[tx]['path'] = insertHop(txsPath[tx]['path'], hop)
+                    # if hop['proxy'] == False:
+                    #     txsPath[tx]['broadcasted'] = True
 
         
 

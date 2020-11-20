@@ -137,15 +137,16 @@ def createNetwork(bdir,numReach, numUnreach, opts):
 
     #create reachable nodes
     logs=" -logips -debug=net -logtimemicros"
+    btcopts = opts+logs
     for i in range(1, numReach+1):
         name="nodeR"+str(i)
-        runNode(name, opts+logs)
+        runNode(name, btcopts)
         nodeDb.write(name+"="+getNodeIP(name)+"\n")
 
     #create unreachable nodes
     for i in range(1, numUnreach+1):
         name="nodeU"+str(i)
-        runNode(name, "-listen=0 "+opts)
+        runNode(name, "-listen=0 "+btcopts)
         nodeDb.write(name+"="+getNodeIP(name)+"\n")
 
     nodeDb.close()
@@ -163,7 +164,7 @@ def createCloverNetwork(numReach=20, numUnreach=0, numOutProxies=2, numInProxies
     relays=" -inrelays="+numInProxies+" -outrelays="+numOutProxies
     diffuse=" -probdiffuse="+probDiffuse
     epoch=" -epoch="+epochTime
-    opts=outconns+relays+diffuse
+    opts=outconns+relays+diffuse+epoch
 
     bdir = "bin/clover/"
     createNetwork(bdir, numReach, numUnreach, opts)

@@ -128,6 +128,7 @@ def generateTransactions(arg,stop_event):
             lastTx[nodes[0]] = datetime.datetime.now()
 
             nLocks[nodes[0]].release()
+            time.sleep(0.0001)
 
     txdb.write(db)
     txdb.flush()

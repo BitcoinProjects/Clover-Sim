@@ -159,7 +159,16 @@ def main():
                     # if hop['proxy'] == False:
                     #     txsPath[tx]['broadcasted'] = True
 
-        
+    # stat peers
+    numR = 0
+    numInPeers = 0
+    for n in cloverDB:
+        if "R" in n:
+            numR+=1
+            peers = cloverDB[n]['peers']
+            numInPeers+=len(peers)-4 #TODO: check inbound/outbound
+
+    print "Avg inbound peers (R nodes): "+str(float(numInPeers)/float(numR))
 
     # printDB(txsPath)
     dumpDB("txPath.db",txsPath)

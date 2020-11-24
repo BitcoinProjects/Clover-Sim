@@ -48,7 +48,7 @@ def getBalance(node):
 
 # Send a transaction from node 'nFrom' to address 'nTo' with 'amount' coins
 def sendTx(nFrom, nTo, amount):
-    print "[LOG] Sending "+str(amount)+" from "+nFrom+" to "+nTo
+    # print "[LOG] Sending "+str(amount)+" from "+nFrom+" to "+nTo
 
     balance = getBalance(nFrom)
     if balance < amount:
@@ -158,7 +158,7 @@ def initTxSim():
     nodeList = btcnet.getNodeList()
     for node in nodeList:
         if "Spy" in node: continue
-        print "Initiating "+node
+        # print "Initiating "+node
         genBTCAddress(node)
         execWS(node, "settxfee 0.0")
 
@@ -167,6 +167,7 @@ def initTxSim():
     time.sleep(10)
 
     # Send funds to all nodes #
+    print "Funding nodes..."
     for node in nodeList:
         if "Spy" in node or "Miner" in node: continue
 

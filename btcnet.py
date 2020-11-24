@@ -25,9 +25,10 @@ btcli = "bitcoin-cli"
 btcdx = btcdir+btcd
 btclix = btcdir+btcli
 btcopt = "-regtest -fallbackfee=0.00000001 -dustrelayfee=0.0 -mintxfee=0.00000001" #-nodebuglogfile
+OUTPEERS = 4
 
 def execBTC(node, opts=""):
-    os.system("docker exec -t "+node+" "+btcdx+" "+btcopt+" "+opts+" -daemon")
+    os.system("docker exec -t "+node+" "+btcdx+" "+btcopt+" "+opts+" -daemon > /dev/null")
 
 def execN(node, cmd, opts=""):
     os.system("docker exec -t "+node+" "+btclix+" -regtest "+opts+" "+cmd)
@@ -82,9 +83,9 @@ def createNodeDock(bdir=bindir):
 
 #Start a new node container
 def runNode(name, options):
-    os.system("docker run -it -d --rm --network=btcnet --name "+name+" "+IMG+":node /bin/bash")
+    os.system("docker run -it -d --rm --network=btcnet --name "+name+" "+IMG+":node /bin/bash > /dev/null")
     execBTC(name, options)
-    print "Running "+name+"("+getNodeIP(name)+")"
+    # print "Running "+name+"("+getNodeIP(name)+")"
 
 def renameNode(name, newName):
     os.system("docker rename "+name+" "+newName)
@@ -96,15 +97,15 @@ def renameNode(name, newName):
 
 def connectNode(nFrom,nTo):
     toAddr = getNodeIP(nTo)
-    print "connecting "+nFrom+" to "+nTo
+    # print "connecting "+nFrom+" to "+nTo
     execN(nFrom,"addnode "+toAddr+":18444 onetry")
 
 #Connect a node to 3 R nodes
 def connectNodes(node):
     #get random R nodes
-    randList = getRandList("nodeR",4,node)
+    randList = getRandList("nodeR",OUTPEERS,node)
 
-    print node+":"
+    # print node+":"
     for rNode in randList:
         connectNode(node,rNode)
 
@@ -122,7 +123,8 @@ def connectNodes(node):
 #Create 'numReach'+'numUnreach' containers and create random connections
 def createNetwork(bdir,numReach, numUnreach, opts):
     createNodeDock(bdir)
-    os.system("docker network create --internal --subnet 10.1.0.0/16 btcnet")
+    print "Creating network..."
+    os.system("docker network create --internal --subnet 10.1.0.0/16 btcnet > /dev/null")
 
     print "num nodes="+str(numReach+numUnreach)
 
@@ -134,7 +136,7 @@ def createNetwork(bdir,numReach, numUnreach, opts):
     if not os.path.exists('log'):
         os.makedirs('log')
 
-
+    print "Creating nodes..."
     #create reachable nodes
     logs=" -logips -debug=net -logtimemicros"
     btcopts = opts+logs
@@ -150,17 +152,20 @@ def createNetwork(bdir,numReach, numUnreach, opts):
         nodeDb.write(name+"="+getNodeIP(name)+"\n")
 
     nodeDb.close()
+    print "DONE"
     time.sleep(5)
 
     #create connections
+    print "Connecting nodes..."
     nodeList = getNodeList()
     for node in nodeList:
         connectNodes(node)
+    print "DONE"
 
     return    
 
 def createCloverNetwork(numReach=20, numUnreach=0, numOutProxies=2, numInProxies=2, probDiffuse=30, epochTime=30):
-    outconns=" -outbound=4"
+    outconns=" -outbound="+str(OUTPEERS)
     relays=" -inrelays="+numInProxies+" -outrelays="+numOutProxies
     diffuse=" -probdiffuse="+probDiffuse
     epoch=" -epoch="+epochTime
@@ -171,7 +176,7 @@ def createCloverNetwork(numReach=20, numUnreach=0, numOutProxies=2, numInProxies
 
 def createStandardNetwork(numReach=20, numUnreach=0):
     bdir = "bin/std/"
-    createNetwork(bdir, numReach, numUnreach, "-outbound=4")
+    createNetwork(bdir, numReach, numUnreach, "-outbound="+str(OUTPEERS))
 
 # Dump logs
 def dumpLogs():

@@ -211,28 +211,41 @@ def main():
     gRIn = 0
     gROut = 0
     gUOut = 0
+    minIn=1000
+    maxIn=0
+    minOut=1000
+    maxOut=0
     R=0
     U=0
     for node in cloverDB:
         if "Spy" in node: continue
         
-        inptxs = 0
-        outptxs = 0
         for tx in cloverDB[node]['txs']:
             if tx['proxy']==True:
                 if tx['type']=="inbound":
                     nodeTxs[node]['inptxs']+=1
                 else:
                     nodeTxs[node]['outptxs']+=1
-        # print "inbound:"+str(inptxs)+" outbound:"+str(outptxs)
+        
+        # stats
+        inptxs = nodeTxs[node]['inptxs']
+        outptxs = nodeTxs[node]['outptxs']
+
         if "U" in node:
             U+=1
-            gUOut+=nodeTxs[node]['outptxs']
+            gUOut+=outptxs
         else:
             R+=1
-            gRIn+=nodeTxs[node]['inptxs']
-            gROut+=nodeTxs[node]['outptxs']
-        
+            gRIn+=inptxs
+            gROut+=outptxs
+
+            #min / max
+            if inptxs < minIn: minIn=inptxs
+            if inptxs > maxIn: maxIn=inptxs
+
+        if outptxs < minOut: minOut=outptxs
+        if outptxs > maxOut: maxOut=outptxs
+    
     # printDB(nodeTxs)
 
     #TODO: avg produced transactions
@@ -240,6 +253,9 @@ def main():
     print "R: avg inbound="+str(gRIn/R)+" avg outbound="+str(gROut/R)
     if U>0:
         print "U: avg outbound="+str(gUOut/U)
+    print "ALL: avg outbound="+str((gROut+gUOut)/(R+U))
+    print "MinIn: "+str(minIn)+" MaxIn: "+str(maxIn)
+    print "MinOut: "+str(minOut)+" MaxOut: "+str(maxOut)
         
 
 main()

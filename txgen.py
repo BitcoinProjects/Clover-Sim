@@ -105,7 +105,7 @@ def generateTransactions(arg,stop_event):
     nodeList = btcnet.getNodeList()
     global lastTx
     global mutex
-    txfreq = datetime.timedelta(seconds=1)
+    txfreq = datetime.timedelta(seconds=3)
     for n in nodeList:
         lastTx[n] = datetime.datetime.now() - txfreq
 

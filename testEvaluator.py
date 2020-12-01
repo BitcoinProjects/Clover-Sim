@@ -39,10 +39,11 @@ def main():
     txDB = {}
     for i in range(len(txs)):
         txs[i] = txs[i].split(" ")
-        if(txs[i][1] in nodeDB):
-            txDB[txs[i][0]] = nodeDB[txs[i][1]]
-        else:
-            print "WARNING: missing: "+txs[i][0]
+        if(len(txs[i])>0):
+            if(txs[i][1] in nodeDB):
+                txDB[txs[i][0]] = nodeDB[txs[i][1]]
+            else:
+                print "WARNING: missing: "+txs[i][0]
 
     # Compute overall
     trues = 0

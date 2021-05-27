@@ -176,6 +176,12 @@ def createStandardNetwork(numReach=20, numUnreach=0):
     bdir = "bin/std/"
     createNetwork(bdir, numReach, numUnreach, "-outbound="+str(OUTPEERS))
 
+def createDandelionNetwork(numReach=20, numUnreach=0):
+    bdir = "bin/dandelion/"
+    createNetwork(bdir, numReach, numUnreach)
+
+    
+
 # Dump logs
 def dumpLogs():
     print "Dumping logs"

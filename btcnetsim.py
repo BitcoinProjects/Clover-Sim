@@ -30,14 +30,13 @@ def main():
 
         if nettype == "std":
             btcnet.createStandardNetwork(int(numReach), int(numUnreach))
-        else:
-            numOutProxies = sys.argv[5]
-            numInProxies = sys.argv[6]
-            probDiffuse = sys.argv[7]
-            epochTime = sys.argv[8]
+        if nettype == "clover":
+            probDiffuse = sys.argv[5]
 
-            btcnet.createCloverNetwork(int(numReach), int(numUnreach), numOutProxies, numInProxies, probDiffuse, epochTime)
-    
+            btcnet.createCloverNetwork(int(numReach), int(numUnreach), probDiffuse)
+        if nettype == "dandelion":
+            btcnet.createDandelionNetwork(int(numReach), int(numUnreach))
+
         print("DONE\n")
         return
 

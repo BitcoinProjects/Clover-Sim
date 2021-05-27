@@ -164,12 +164,10 @@ def createNetwork(bdir,numReach, numUnreach, opts):
 
     return    
 
-def createCloverNetwork(numReach=20, numUnreach=0, numOutProxies=2, numInProxies=2, probDiffuse=30, epochTime=30):
+def createCloverNetwork(numReach=20, numUnreach=0, probDiffuse=30):
     outconns=" -outbound="+str(OUTPEERS)
-    relays=" -inrelays="+numInProxies+" -outrelays="+numOutProxies
     diffuse=" -probdiffuse="+probDiffuse
-    epoch=" -epoch="+epochTime
-    opts=outconns+relays+diffuse+epoch
+    opts=outconns+diffuse
 
     bdir = "bin/clover/"
     createNetwork(bdir, numReach, numUnreach, opts)

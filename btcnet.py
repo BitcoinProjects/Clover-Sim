@@ -178,7 +178,7 @@ def createStandardNetwork(numReach=20, numUnreach=0):
 
 def createDandelionNetwork(numReach=20, numUnreach=0):
     bdir = "bin/dandelion/"
-    createNetwork(bdir, numReach, numUnreach)
+    createNetwork(bdir, numReach, numUnreach, "")
 
     
 
